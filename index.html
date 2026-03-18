@@ -231,7 +231,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;font-family:
           <input type="tel" id="pinp" maxlength="10" placeholder="Enter mobile number" inputmode="numeric" style="border:none;background:transparent;font-family:system-ui,sans-serif;font-size:16px;color:var(--br2);outline:none;flex:1"/>
         </div>
         <div style="font-size:11px;color:#B08060;margin-bottom:16px;text-align:center">We'll send an OTP to verify your number</div>
-        <button class="btn" id="send-otp-btn" onclick="sendRealOTP ? sendRealOTP() : sendOTP()">Send OTP →</button>
+        <button class="btn" id="send-otp-btn" onclick="sendOTP()">Send OTP →</button>
         <div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--cr2)"></div><span style="font-size:11px;color:#C4A882">or</span><div style="flex:1;height:1px;background:var(--cr2)"></div></div>
         <button onclick="nav('s-welcome')" style="width:100%;padding:13px;background:transparent;border:1.5px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--br);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🔵 &nbsp;Continue with Google</button>
       </div>
@@ -248,7 +248,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;font-family:
           <input id="ob4" maxlength="1" inputmode="numeric" oninput="otpIn(this,'ob3','')" style="width:64px;height:64px;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:24px;font-weight:700;color:var(--br2);text-align:center;outline:none;transition:border-color .2s"/>
         </div>
         <div style="text-align:center;font-size:12px;color:#B08060;margin-bottom:18px">Didn't receive? <span style="color:var(--or);font-weight:600;cursor:pointer" onclick="startOTPTimer()">Resend OTP</span> &nbsp;<span style="font-weight:600;color:var(--br)" id="otptmr">0:30</span></div>
-        <button class="btn" onclick="verifyRealOTP ? verifyRealOTP() : verOTP()">Verify & Continue ✓</button>
+        <button class="btn" onclick="verOTP()">Verify & Continue ✓</button>
       </div>
       <!-- NAME entry screen - shown after OTP for new users -->
       <div id="name-sec" style="display:none">
@@ -707,12 +707,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;font-family:
     <div style="position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:rgba(255,255,255,.04);border-radius:50%"></div>
     <div style="position:relative;display:inline-block;margin-bottom:11px;z-index:2"><div style="width:82px;height:82px;background:linear-gradient(135deg,var(--or),#FF8FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid rgba(255,255,255,.2);box-shadow:0 8px 24px rgba(0,0,0,.3)">👨‍🍳</div><div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid white">✏️</div></div>
     <div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:white;margin-bottom:2px;position:relative;z-index:2" id="profile-name">Friend</div>
-    <div style="font-size:11px;color:rgba(255,255,255,.6);position:relative;z-index:2">+91 98765 43210</div>
-    <div style="display:flex;justify-content:center;gap:6px;margin-top:10px;z-index:2;position:relative;flex-wrap:wrap"><div style="background:rgba(255,217,61,.2);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:var(--yw)">⭐ Gold Member</div><div style="background:rgba(255,255,255,.1);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.8)">🍛 Food Lover</div></div>
+    <div style="font-size:11px;color:rgba(255,255,255,.6);position:relative;z-index:2" id="profile-phone">+91 XXXXX XXXXX</div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:10px;z-index:2;position:relative;flex-wrap:wrap" id="profile-badges"><div style="background:rgba(255,255,255,.1);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.8)">🆕 New Member</div></div>
   </div>
   <div style="display:flex;background:var(--wh);border-bottom:1px solid var(--cr2);flex-shrink:0">
-    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)">24</div><div style="font-size:10px;color:#B08060;margin-top:1px">Orders</div></div>
-    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)">₹1.8k</div><div style="font-size:10px;color:#B08060;margin-top:1px">Spent</div></div>
+    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)" id="profile-orders">0</div><div style="font-size:10px;color:#B08060;margin-top:1px">Orders</div></div>
+    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)" id="profile-spent">₹0</div><div style="font-size:10px;color:#B08060;margin-top:1px">Spent</div></div>
     <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)">4.8★</div><div style="font-size:10px;color:#B08060;margin-top:1px">Rating</div></div>
     <div style="flex:1;padding:11px 7px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--or)" id="liked-count">0❤️</div><div style="font-size:10px;color:#B08060;margin-top:1px">Liked</div></div>
   </div>
@@ -819,47 +819,68 @@ function gotoCart(){buildCart();nav('s-cart');}
 
 // SPLASH AUTO - skipped, start on OTP
 
-// OTP — Real Firebase only
+// OTP — DEMO MODE (testing)
 let otpT;
 function sendOTP(){
-  const btn = document.getElementById('send-otp-btn');
-  if(window.sendRealOTP){
-    sendRealOTP();
-  } else {
-    if(btn){ btn.textContent = '⏳ Connecting...'; btn.disabled = true; }
-    let tries = 0;
-    const wait = setInterval(()=>{
-      tries++;
-      if(window.sendRealOTP){
-        clearInterval(wait);
-        if(btn){ btn.textContent = 'Send OTP →'; btn.disabled = false; }
-        sendRealOTP();
-      } else if(tries > 10){
-        clearInterval(wait);
-        if(btn){ btn.textContent = 'Send OTP →'; btn.disabled = false; }
-        alert('Connection failed. Check internet!');
-      }
-    }, 500);
+  const ph = document.getElementById('pinp').value.trim();
+  if(ph.length < 6){
+    const w = document.getElementById('pwrap');
+    w.style.animation='shake .4s ease';
+    setTimeout(()=>w.style.animation='',400);
+    return;
   }
+  window._phone = ph;
+  document.getElementById('ph-show').textContent = '+91 '+ph.slice(0,5)+'XXXXX';
+  document.getElementById('ph-sec').style.display = 'none';
+  document.getElementById('otp-sec').style.display = 'block';
+  startOTPTimer();
+  // Auto fill OTP
+  setTimeout(()=>{
+    ['ob1','ob2','ob3','ob4'].forEach((id,i)=>setTimeout(()=>{
+      const el=document.getElementById(id);
+      el.value=(i+1).toString();
+      el.style.borderColor='var(--or)';
+      el.style.background='#FFF0EA';
+    },i*120));
+  },600);
+  // Auto verify after 1.7s
+  setTimeout(()=>checkUserAndLogin(),1700);
 }
 function showPh(){
   document.getElementById('ph-sec').style.display='block';
   document.getElementById('otp-sec').style.display='none';
   document.getElementById('name-sec').style.display='none';
   clearInterval(otpT);
-  ['ob1','ob2','ob3','ob4'].forEach(id=>{const el=document.getElementById(id);el.value='';el.style.borderColor='';el.style.background='';});
+  ['ob1','ob2','ob3','ob4'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.value='';el.style.borderColor='';el.style.background='';
+  });
 }
 function otpIn(el,prev,next){
   if(el.value){el.style.borderColor='var(--or)';el.style.background='#FFF0EA';if(next)document.getElementById(next).focus();}
   else{el.style.borderColor='';el.style.background='';if(prev)document.getElementById(prev).focus();}
   const otp=['ob1','ob2','ob3','ob4'].map(id=>document.getElementById(id).value).join('');
-  if(otp.length===4)setTimeout(()=>{ if(window.verifyRealOTP) verifyRealOTP(); },300);
+  if(otp.length===4)setTimeout(()=>checkUserAndLogin(),300);
 }
-function verOTP(){clearInterval(otpT);nav('s-welcome');}
+function verOTP(){clearInterval(otpT);checkUserAndLogin();}
 function startOTPTimer(){
   let s=30;clearInterval(otpT);
   const el=document.getElementById('otptmr');
   otpT=setInterval(()=>{s--;if(el)el.textContent='0:'+String(s).padStart(2,'0');if(s<=0)clearInterval(otpT);},1000);
+}
+// Check Firebase if user exists, else ask name
+async function checkUserAndLogin(){
+  clearInterval(otpT);
+  const ph = window._phone||'demo';
+  const uid = 'user_'+ph;
+  window._uid = uid;
+  if(window._fbCheckUser){
+    await window._fbCheckUser(uid, ph);
+  } else {
+    // Firebase not loaded yet — just go to name screen
+    document.getElementById('otp-sec').style.display='none';
+    document.getElementById('name-sec').style.display='block';
+  }
 }
 
 // CART
@@ -998,6 +1019,11 @@ function placeOrder(){
   const cn=Math.floor(Math.random()*1000)+1000;
   document.getElementById('ty-cn').textContent='🌟 #'+cn;
   document.getElementById('ty-on').textContent=cn.toLocaleString()+'th';
+  // Update profile stats
+  window._orderCount = (window._orderCount||0) + 1;
+  const orderTotal = Object.values(cart).reduce((s,v)=>s+v.qty*v.p,0)+25;
+  window._totalSpent = (window._totalSpent||0) + orderTotal;
+  if(window.updateProfileStats) updateProfileStats();
   // Save to Firebase
   if(window.saveOrderToFirebase) {
     window.saveOrderToFirebase().then(id => {
@@ -1209,12 +1235,32 @@ window.updateAllNames = function(name, isNew){
   if(pn) pn.textContent = name;
   const tyn = document.getElementById('ty-name');
   if(tyn) tyn.textContent = name+'!';
+  // Profile phone
+  const pp = document.getElementById('profile-phone');
+  if(pp && window._phone) pp.textContent = '+91 '+window._phone.slice(0,5)+' '+window._phone.slice(5);
+  // Profile badges
+  const pb = document.getElementById('profile-badges');
+  if(pb) pb.innerHTML = isNew
+    ? `<div style="background:rgba(255,255,255,.1);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.8)">🆕 New Member</div>`
+    : `<div style="background:rgba(255,217,61,.2);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:var(--yw)">⭐ Member</div><div style="background:rgba(255,255,255,.1);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.8)">🍛 Food Lover</div>`;
+  // Profile orders + spent — calculate from current cart session
+  updateProfileStats();
+  // Thank you badge
   const badge = document.getElementById('customer-badge');
   if(badge){
     badge.textContent = isNew ? '🆕 New Customer' : '⭐ Returning Customer';
     badge.style.background = isNew ? '#E8F5E9' : '#FFF8E1';
     badge.style.color = isNew ? '#2E7D32' : '#E65100';
   }
+}
+
+window.updateProfileStats = function(){
+  const orderCount = window._orderCount || 0;
+  const totalSpent = window._totalSpent || 0;
+  const po = document.getElementById('profile-orders');
+  const ps = document.getElementById('profile-spent');
+  if(po) po.textContent = orderCount;
+  if(ps) ps.textContent = totalSpent > 0 ? '₹'+(totalSpent >= 1000 ? (totalSpent/1000).toFixed(1)+'k' : totalSpent) : '₹0';
 }
 
 // ─── SAVE ORDER ───
@@ -1242,8 +1288,28 @@ window.saveOrderToFirebase = async function(){
   }
 }
 
-window.setWelcomeName = window.updateAllNames;
-console.log('🔥 Firebase ready! tastymeals-d4a6a');
+window._fbCheckUser = async function(uid, ph){
+  try {
+    const usnap = await getDoc(doc(db,'users',uid));
+    if(usnap.exists()){
+      // ⭐ EXISTING USER
+      const udata = usnap.data();
+      window._userName = udata.name;
+      window._orderCount = udata.orderCount || 0;
+      window._totalSpent = udata.totalSpent || 0;
+      updateAllNames(udata.name, false);
+      nav('s-welcome');
+    } else {
+      // 🆕 NEW USER — ask name
+      document.getElementById('otp-sec').style.display='none';
+      document.getElementById('name-sec').style.display='block';
+    }
+  } catch(e){
+    console.warn('User check failed:', e);
+    document.getElementById('otp-sec').style.display='none';
+    document.getElementById('name-sec').style.display='block';
+  }
+}
 </script>
 <div id="recaptcha-container"></div>
 </body>
