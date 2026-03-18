@@ -821,8 +821,20 @@ function gotoCart(){buildCart();nav('s-cart');}
 // OTP — Real Firebase only
 let otpT;
 function sendOTP(){
-  // Demo fallback disabled — use sendRealOTP
-  alert('Please wait, connecting to Firebase...');
+  // Wait for Firebase to load then call real OTP
+  if(window.sendRealOTP){
+    sendRealOTP();
+  } else {
+    const btn = document.querySelector('.btn');
+    if(btn){ btn.textContent = '⏳ Loading...'; btn.disabled = true; }
+    setTimeout(()=>{
+      if(window.sendRealOTP){ sendRealOTP(); }
+      else { 
+        if(btn){ btn.textContent = 'Send OTP →'; btn.disabled = false; }
+        alert('Connection failed. Check internet!'); 
+      }
+    }, 2000);
+  }
 }
 function showPh(){
   document.getElementById('ph-sec').style.display='block';
