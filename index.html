@@ -280,7 +280,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;font-family:
       <div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--yw);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2.5px solid white">✨</div>
     </div>
     <div style="font-size:12px;color:var(--or);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;animation:up .5s ease both .3s;opacity:0" id="greet-t">Good Morning! 🌅</div>
-    <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--br2);margin-bottom:8px;line-height:1.2;animation:up .5s ease both .5s;opacity:0">Welcome back,<br><em style="color:var(--or)" id="welcome-name">Friend!</em></div>
+    <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--br2);margin-bottom:8px;line-height:1.2;animation:up .5s ease both .5s;opacity:0" id="welcome-heading">Welcome back,</div>
+    <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--or);margin-bottom:8px;line-height:1.2;animation:up .5s ease both .5s;opacity:0"><em id="welcome-name">Friend!</em></div>
     <div style="font-size:13px;color:var(--br);line-height:1.7;max-width:290px;margin:0 auto 22px;animation:up .5s ease both .7s;opacity:0">Hungry da? 😄 Your favourite <strong style="color:var(--or)">South Indian breakfast</strong> is freshly prepared!</div>
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:26px;animation:up .5s ease both .9s;opacity:0;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:5px;background:var(--wh);border:1.5px solid var(--cr2);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:500;color:var(--br)">🌅 Breakfast</div>
@@ -1098,8 +1099,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-window._db = db;
-window._auth = auth;
 
 // ─── SEND REAL OTP ───
 window.sendRealOTP = async function(){
@@ -1110,98 +1109,106 @@ window.sendRealOTP = async function(){
     setTimeout(()=>w.style.animation='',400);
     return;
   }
+  const btn = document.getElementById('send-otp-btn');
+  btn.textContent = '⏳ Sending...';
+  btn.disabled = true;
   try {
     if(!window._recaptcha){
       window._recaptcha = new RecaptchaVerifier(auth,'recaptcha-container',{size:'invisible'});
     }
-    const confirm = await signInWithPhoneNumber(auth, '+91'+ph, window._recaptcha);
-    window._confirm = confirm;
+    const result = await signInWithPhoneNumber(auth, '+91'+ph, window._recaptcha);
+    window._confirm = result;
     window._phone = ph;
     document.getElementById('ph-show').textContent = '+91 '+ph.slice(0,5)+'XXXXX';
     document.getElementById('ph-sec').style.display = 'none';
     document.getElementById('otp-sec').style.display = 'block';
     startOTPTimer();
+    btn.textContent = 'Send OTP →';
+    btn.disabled = false;
   } catch(e){
-    console.warn('Real OTP failed, using demo mode:', e.message);
-    sendOTP(); // fallback demo
+    btn.textContent = 'Send OTP →';
+    btn.disabled = false;
+    alert('OTP failed: '+e.message);
   }
 }
 
-// ─── VERIFY REAL OTP ───
+// ─── VERIFY OTP ───
 window.verifyRealOTP = async function(){
   const otp = ['ob1','ob2','ob3','ob4'].map(id=>document.getElementById(id).value).join('');
   if(otp.length < 4) return;
+  const btn = document.querySelector('#otp-sec .btn');
+  if(btn){ btn.textContent='⏳ Verifying...'; btn.disabled=true; }
   try {
-    let user;
+    let uid;
     if(window._confirm){
       const result = await window._confirm.confirm(otp);
-      user = result.user;
+      uid = result.user.uid;
+    } else {
+      uid = 'test_'+window._phone;
     }
-    const uid = user?.uid || 'demo_'+window._phone;
     window._uid = uid;
-    // Check if existing user
+
+    // Check existing or new user
     const usnap = await getDoc(doc(db,'users',uid));
+    if(btn){ btn.textContent='Verify & Continue ✓'; btn.disabled=false; }
+
     if(usnap.exists()){
-      // Old customer — get name directly
+      // ⭐ EXISTING USER
       const udata = usnap.data();
       window._userName = udata.name;
-      setWelcomeName(udata.name, false);
+      updateAllNames(udata.name, false);
       clearInterval(otpT);
       nav('s-welcome');
     } else {
-      // New customer — ask name
+      // 🆕 NEW USER — ask name
       clearInterval(otpT);
-      document.getElementById('otp-sec').style.display = 'none';
-      document.getElementById('name-sec').style.display = 'block';
+      document.getElementById('otp-sec').style.display='none';
+      document.getElementById('name-sec').style.display='block';
     }
   } catch(e){
-    console.warn('Verify failed, demo mode:', e);
-    // Demo fallback
-    clearInterval(otpT);
-    document.getElementById('otp-sec').style.display = 'none';
-    document.getElementById('name-sec').style.display = 'block';
+    if(btn){ btn.textContent='Verify & Continue ✓'; btn.disabled=false; }
+    alert('Wrong OTP! Try again.');
   }
 }
 
-// ─── SAVE NAME (new user) ───
+// ─── SAVE NAME (new users only) ───
 window.saveName = async function(){
   const name = document.getElementById('ninp').value.trim();
   if(!name){
-    document.getElementById('nwrap').style.animation='shake .4s ease';
-    setTimeout(()=>document.getElementById('nwrap').style.animation='',400);
+    const w = document.getElementById('nwrap');
+    w.style.animation='shake .4s ease';
+    setTimeout(()=>w.style.animation='',400);
     return;
   }
+  const btn = document.querySelector('#name-sec .btn');
+  if(btn){ btn.textContent='⏳ Saving...'; btn.disabled=true; }
   window._userName = name;
-  const uid = window._uid || 'demo_guest';
+  window._isNewUser = true;
   try {
-    await setDoc(doc(db,'users',uid),{
+    await setDoc(doc(db,'users',window._uid||'guest_'+Date.now()),{
       name,
-      phone: window._phone || 'demo',
+      phone: '+91'+(window._phone||''),
       createdAt: serverTimestamp(),
-      isNew: true
+      orderCount: 0
     });
-  } catch(e){ console.warn('Save user failed:', e); }
-  setWelcomeName(name, true);
+  } catch(e){ console.warn('Save user error:',e); }
+  if(btn){ btn.textContent="Let's Go! 🚀"; btn.disabled=false; }
+  updateAllNames(name, true);
   nav('s-welcome');
 }
 
-// ─── SET WELCOME NAME ───
-window.setWelcomeName = function(name, isNew){
-  // Welcome screen
-  const wel = document.getElementById('welcome-name');
-  if(wel) wel.textContent = name+'!';
-  // Home greeting
-  ['hgreet'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.textContent = (isNew?'Welcome, ':'Welcome back, ')+name+'! 👋';
-  });
-  // Profile name
+// ─── UPDATE ALL NAME ELEMENTS ───
+window.updateAllNames = function(name, isNew){
+  const heading = document.getElementById('welcome-heading');
+  if(heading) heading.textContent = isNew ? 'Welcome,' : 'Welcome back,';
+  const wn = document.getElementById('welcome-name');
+  if(wn) wn.textContent = name+'!';
+  const hg = document.getElementById('hgreet');
+  if(hg) hg.textContent = (isNew?'Welcome, ':'Welcome back, ')+name+'! 👋';
   const pn = document.getElementById('profile-name');
   if(pn) pn.textContent = name;
-  // Thank you screen name
   const tyn = document.getElementById('ty-name');
   if(tyn) tyn.textContent = name+'!';
-  // New/returning badge
   const badge = document.getElementById('customer-badge');
   if(badge){
     badge.textContent = isNew ? '🆕 New Customer' : '⭐ Returning Customer';
@@ -1221,20 +1228,21 @@ window.saveOrderToFirebase = async function(){
       items, subtotal, total,
       coupon: coupon||null,
       customerName: window._userName||'Guest',
-      phone: window._phone||'demo',
+      phone: '+91'+(window._phone||''),
       uid: window._uid||'guest',
       address: '12, Anna Nagar, Chennai - 600040',
       status: 'placed',
       createdAt: serverTimestamp()
     });
-    console.log('✅ Order saved:', orderRef.id);
+    console.log('✅ Order saved:',orderRef.id);
     return orderRef.id;
   } catch(e){
-    console.error('❌ Firebase order error:', e);
+    console.error('❌ Order error:',e);
     return null;
   }
 }
 
+window.setWelcomeName = window.updateAllNames;
 console.log('🔥 Firebase ready! tastymeals-d4a6a');
 </script>
 <div id="recaptcha-container"></div>
