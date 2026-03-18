@@ -231,7 +231,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;font-family:
           <input type="tel" id="pinp" maxlength="10" placeholder="Enter mobile number" inputmode="numeric" style="border:none;background:transparent;font-family:system-ui,sans-serif;font-size:16px;color:var(--br2);outline:none;flex:1"/>
         </div>
         <div style="font-size:11px;color:#B08060;margin-bottom:16px;text-align:center">We'll send an OTP to verify your number</div>
-        <button class="btn" onclick="sendRealOTP ? sendRealOTP() : sendOTP()">Send OTP →</button>
+        <button class="btn" id="send-otp-btn" onclick="sendRealOTP ? sendRealOTP() : sendOTP()">Send OTP →</button>
         <div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--cr2)"></div><span style="font-size:11px;color:#C4A882">or</span><div style="flex:1;height:1px;background:var(--cr2)"></div></div>
         <button onclick="nav('s-welcome')" style="width:100%;padding:13px;background:transparent;border:1.5px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--br);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🔵 &nbsp;Continue with Google</button>
       </div>
@@ -821,19 +821,24 @@ function gotoCart(){buildCart();nav('s-cart');}
 // OTP — Real Firebase only
 let otpT;
 function sendOTP(){
-  // Wait for Firebase to load then call real OTP
+  const btn = document.getElementById('send-otp-btn');
   if(window.sendRealOTP){
     sendRealOTP();
   } else {
-    const btn = document.querySelector('.btn');
-    if(btn){ btn.textContent = '⏳ Loading...'; btn.disabled = true; }
-    setTimeout(()=>{
-      if(window.sendRealOTP){ sendRealOTP(); }
-      else { 
+    if(btn){ btn.textContent = '⏳ Connecting...'; btn.disabled = true; }
+    let tries = 0;
+    const wait = setInterval(()=>{
+      tries++;
+      if(window.sendRealOTP){
+        clearInterval(wait);
         if(btn){ btn.textContent = 'Send OTP →'; btn.disabled = false; }
-        alert('Connection failed. Check internet!'); 
+        sendRealOTP();
+      } else if(tries > 10){
+        clearInterval(wait);
+        if(btn){ btn.textContent = 'Send OTP →'; btn.disabled = false; }
+        alert('Connection failed. Check internet!');
       }
-    }, 2000);
+    }, 500);
   }
 }
 function showPh(){
