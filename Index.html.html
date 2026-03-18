@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>TastyMeals</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--cr:#FAF3E8;--cr2:#F5E6D3;--or:#E8622A;--br:#6B3F2A;--br2:#3E2010;--wh:#FFFDF9;--tl:#4ECDC4;--yw:#FFD93D;--gn:#2E7D32;--nv:#0D1B2A;--nv2:#1B2B3A}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center}
+.app{width:min(430px,100%);height:100vh;max-height:100vh;position:relative;overflow:hidden;background:var(--cr);flex-shrink:0}
+@media(min-width:500px){.app{height:90vh;max-height:900px;border-radius:32px;box-shadow:0 32px 80px rgba(0,0,0,.6)}}
+.scr{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(30px);transition:opacity .3s ease,transform .3s ease;visibility:hidden}
+.scr.on{opacity:1;pointer-events:all;transform:translateX(0);visibility:visible}
+.scr.back{opacity:0;transform:translateX(-30px);pointer-events:none;visibility:hidden}
+.sb{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sb::-webkit-scrollbar{display:none}
+/* Animations */
+@keyframes blob{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes bounce{0%,80%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1.1);opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes logoIn{from{opacity:0;transform:scale(.5) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes popin{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes hpop{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
+@keyframes riderf{from{transform:translate(0,0)}to{transform:translate(12px,-8px)}}
+@keyframes rpulse{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.5);opacity:0}}
+@keyframes popUp{from{transform:scale(.5) translateY(38px);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes conffly{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--cx),var(--cy)) rotate(360deg) scale(0);opacity:0}}
+@keyframes sUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* Common */
+.btn{width:100%;padding:15px;background:linear-gradient(135deg,#E8622A,#FF6B35);border:none;border-radius:14px;font-family:system-ui,sans-serif;font-size:15px;font-weight:700;color:white;cursor:pointer;box-shadow:0 6px 20px rgba(232,98,42,.3);transition:transform .15s}
+.btn:active{transform:scale(.98)}
+.bbtn{width:34px;height:34px;background:var(--cr);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--br2);cursor:pointer;flex-shrink:0}
+/* Food card */
+.fc{background:var(--wh);border-radius:16px;margin-bottom:11px;overflow:hidden;border:1px solid var(--cr2);display:flex;align-items:stretch;box-shadow:0 2px 8px rgba(62,32,16,.05);position:relative;transition:transform .15s}
+.fc:active{transform:scale(.99)}
+.fi{width:110px;flex-shrink:0;position:relative;overflow:hidden;min-height:95px}
+.fi img{width:100%;height:100%;object-fit:cover;display:block}
+.fi-ph{width:100%;height:100%;background:var(--cr2);display:flex;align-items:center;justify-content:center;font-size:34px}
+.vw{position:absolute;top:5px;left:5px;width:15px;height:15px;border:2px solid #5BAD72;border-radius:3px;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center}
+.vd{width:7px;height:7px;border-radius:50%;background:#5BAD72}
+.ctg{position:absolute;top:5px;right:5px;border-radius:6px;padding:2px 5px;font-size:9px;font-weight:700}
+/* Heart button */
+.hbt{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.92);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;z-index:5;transition:all .2s;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.hbt.liked{animation:hpop .3s ease}
+.fb{flex:1;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between}
+.ftg{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.tb{background:#FFF0EA;color:var(--or)}.tn{background:#E8F5E9;color:#5BAD72}.tp{background:#EDE7F6;color:#7B1FA2}
+.ts{background:#FFF8E8;color:#E65100}.tg{background:#E8F5E9;color:var(--gn)}.th{background:#E8F5E9;color:var(--gn)}
+.fn{font-family:Georgia,serif;font-size:13px;font-weight:700;color:var(--br2);margin-bottom:2px}
+.fd{font-size:10px;color:#B08060;line-height:1.4;margin-bottom:7px}
+.fbot{display:flex;align-items:center;justify-content:space-between}
+.fp{font-size:15px;font-weight:700;color:var(--or)}
+.qc{display:flex;align-items:center;background:var(--cr);border-radius:8px;overflow:hidden;border:1.5px solid var(--cr2)}
+.qb{width:26px;height:26px;background:none;border:none;font-size:16px;color:var(--br2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qb:active{background:var(--cr2)}
+.qn{width:24px;text-align:center;font-size:12px;font-weight:700;color:var(--br2)}
+.ab{background:var(--or);border:none;border-radius:8px;width:72px;height:26px;font-family:system-ui,sans-serif;font-size:11px;font-weight:600;color:white;cursor:pointer}
+.ab.g{background:var(--gn)}
+/* Cart bar */
+.cbar{position:absolute;bottom:0;left:0;right:0;background:var(--br2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1);z-index:50}
+.cbar.show{transform:translateY(0)}
+/* Bottom nav */
+.bnav{background:var(--wh);border-top:1px solid var(--cr2);display:flex;padding:8px 0 max(12px,env(safe-area-inset-bottom));flex-shrink:0}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:none}
+.nb .ni{font-size:20px}
+.nb .nl{font-size:10px;color:#C4A882;font-weight:500}
+.nb.on .nl{color:var(--or);font-weight:700}
+.ndot{width:4px;height:4px;background:var(--or);border-radius:50%}
+/* Menu header */
+.mhdr{background:var(--wh);padding:max(44px,env(safe-area-inset-top)) 14px 12px;border-bottom:1px solid var(--cr2);flex-shrink:0;box-shadow:0 2px 10px rgba(62,32,16,.06)}
+.hrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.hl{font-family:cursive;font-size:18px;color:var(--or)}
+.tp2{display:flex;align-items:center;border:1.5px solid var(--cr2);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:600;background:var(--cr);gap:5px}
+.tdot{width:7px;height:7px;border-radius:50%;animation:blink 1.5s ease-in-out infinite;flex-shrink:0}
+.mh{font-family:Georgia,serif;font-size:19px;font-weight:700;color:var(--br2);margin-bottom:2px}
+.mm{font-size:11px;color:#B08060;display:flex;align-items:center;gap:5px}
+.mm span{color:var(--or);font-weight:600}
+.ctabs{display:flex;gap:7px;padding:10px 14px;background:var(--wh);border-bottom:1px solid var(--cr2);overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.ctabs::-webkit-scrollbar{display:none}
+.ctb{display:flex;align-items:center;gap:4px;padding:7px 13px;border-radius:20px;border:1.5px solid var(--cr2);background:var(--cr);white-space:nowrap;font-size:12px;font-weight:600;color:var(--br);cursor:pointer;flex-shrink:0;transition:all .2s}
+.ctb.on{background:var(--or);border-color:var(--or);color:white}
+.slbl{font-size:11px;font-weight:700;color:var(--or);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px;margin-top:4px}
+/* Dark dinner */
+#s-din{background:var(--nv)}
+#s-din .mhdr{background:var(--nv2);border-color:rgba(255,255,255,.06)}
+#s-din .mh{color:white}
+#s-din .mm{color:rgba(255,255,255,.4)}
+#s-din .ctabs{background:var(--nv2);border-color:rgba(255,255,255,.06)}
+#s-din .ctb{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.6)}
+#s-din .ctb.on{background:var(--or);border-color:var(--or);color:white}
+#s-din .fc{background:var(--nv2);border-color:rgba(255,255,255,.07)}
+#s-din .fn{color:white}
+#s-din .fd{color:rgba(255,255,255,.4)}
+#s-din .qn,.qb{color:white}
+#s-din .qc{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1)}
+#s-din .bnav{background:var(--nv2);border-color:rgba(255,255,255,.06)}
+.starbg{position:absolute;width:2px;height:2px;background:white;border-radius:50%;animation:blink 2s ease-in-out infinite}
+/* Page header */
+.phdr{background:var(--wh);padding:max(44px,env(safe-area-inset-top)) 14px 12px;border-bottom:1px solid var(--cr2);flex-shrink:0;box-shadow:0 2px 10px rgba(62,32,16,.06)}
+.ph-row{display:flex;align-items:center;gap:10px}
+.ptitle{font-family:Georgia,serif;font-size:19px;font-weight:700;color:var(--br2)}
+/* Cart empty state */
+.empty-cart{text-align:center;padding:48px 20px}
+/* Liked card */
+.lkcard{background:var(--wh);border-radius:13px;padding:10px;margin-bottom:9px;display:flex;align-items:center;gap:10px;border:1px solid var(--cr2)}
+.lkimg{width:50px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0}
+/* Banners */
+.gbanner{background:linear-gradient(135deg,#1a3a2a,var(--gn));border-radius:14px;padding:13px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;overflow:hidden}
+.hbanner{background:linear-gradient(135deg,#1a3a2a,var(--gn));border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;overflow:hidden}
+/* PAY/TRACK/TY */
+.payhdr{background:linear-gradient(145deg,var(--br2),var(--br));padding:max(44px,env(safe-area-inset-top)) 18px 20px;flex-shrink:0}
+.pbar{background:var(--wh);padding:12px 14px max(18px,env(safe-area-inset-bottom));border-top:1px solid var(--cr2);flex-shrink:0}
+.uapp{background:var(--wh);border-radius:12px;padding:10px 6px;text-align:center;border:2px solid var(--cr2);cursor:pointer;transition:all .2s}
+.uapp.on{border-color:var(--or);background:#FFF8F5}
+/* Tracking */
+.maparea{flex:1;position:relative;overflow:hidden;background:#EAF2EA;min-height:250px}
+.rsvg{position:absolute;inset:0;z-index:3}
+.rmk{position:absolute;z-index:15;animation:riderf 3s ease-in-out infinite alternate}
+.rbub{width:44px;height:44px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 6px 20px rgba(232,98,42,.5);position:relative}
+.rpuls{position:absolute;width:64px;height:64px;border-radius:50%;background:rgba(232,98,42,.2);animation:rpulse 1.5s ease-out infinite;top:-10px;left:-10px}
+.kitmk{position:absolute;z-index:12;background:var(--br2);border-radius:9px;padding:5px 8px;display:flex;align-items:center;gap:4px;border:2.5px solid white;box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.hmk{position:absolute;z-index:12;background:var(--gn);border-radius:9px;padding:5px 8px;display:flex;align-items:center;gap:4px;border:2.5px solid white;box-shadow:0 3px 12px rgba(46,125,50,.35)}
+.mkl{font-size:9px;font-weight:700;color:white}
+.etabox{position:absolute;bottom:12px;right:12px;z-index:20;background:var(--br2);border-radius:14px;padding:10px 13px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.flhdr{position:absolute;top:0;left:0;right:0;padding:max(44px,env(safe-area-inset-top)) 13px 9px;z-index:20;background:linear-gradient(to bottom,rgba(255,255,255,.95) 60%,transparent)}
+.bsh{background:var(--wh);border-radius:20px 20px 0 0;padding:10px 13px max(18px,env(safe-area-inset-bottom));box-shadow:0 -8px 32px rgba(62,32,16,.12);flex-shrink:0;z-index:25}
+.srow{display:flex;align-items:center;position:relative;margin-bottom:11px}
+.srow::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--cr2);z-index:0}
+.sfill{position:absolute;top:14px;left:14px;height:2px;background:var(--or);z-index:1;width:58%}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:2}
+.sdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--wh);border:2px solid var(--cr2)}
+.sdot.dn{background:var(--or);border-color:var(--or)}
+.sdot.nw{background:#FFF0EA;border-color:var(--or)}
+.slb{font-size:8px;font-weight:600;color:#B08060;text-align:center;max-width:52px;line-height:1.3}
+.slb.dn{color:var(--gn)}.slb.nw{color:var(--or)}
+/* TY popup */
+.tyovl{position:absolute;inset:0;background:rgba(62,32,16,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:30;padding:16px}
+.typop{width:100%;max-width:320px;background:var(--wh);border-radius:24px;overflow:hidden;animation:popUp .7s cubic-bezier(.34,1.56,.64,1);box-shadow:0 24px 64px rgba(62,32,16,.4)}
+.conf{position:absolute;width:7px;height:7px;border-radius:2px;animation:conffly 1.2s ease forwards}
+/* Profile */
+.pitem{background:var(--wh);border-radius:12px;padding:12px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;border:1px solid var(--cr2);cursor:pointer;transition:transform .15s}
+.pitem:active{transform:scale(.99)}
+.piic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SPLASH: Real logo, click → next page -->
+<div class="scr on" id="s-splash" style="background:linear-gradient(160deg,#FAF3E8,#F5E6D3,#F2C4A8);align-items:center;justify-content:center;flex-direction:column">
+  <div style="position:absolute;width:260px;height:260px;background:radial-gradient(#FF6B3520,transparent 70%);top:-70px;right:-70px;border-radius:50%;animation:blob 4s ease-in-out infinite"></div>
+  <div style="position:absolute;width:200px;height:200px;background:radial-gradient(#4ECDC430,transparent 70%);bottom:100px;left:-50px;border-radius:50%;animation:blob 5s ease-in-out infinite 1s"></div>
+  <!-- REAL LOGO — clickable → goes to OTP -->
+  <div style="cursor:pointer;z-index:2;text-align:center;animation:logoIn .8s cubic-bezier(.34,1.56,.64,1) both">
+    <svg width="260" viewBox="0 0 360 370" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FF6B35"/><stop offset="33%" stop-color="#4ECDC4"/><stop offset="66%" stop-color="#FF8FA3"/><stop offset="100%" stop-color="#FFD93D"/></linearGradient>
+        <linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FF6B35"/><stop offset="100%" stop-color="#FF3C6E"/></linearGradient>
+      </defs>
+      <circle cx="130" cy="138" r="32" fill="#FFF0EA" stroke="#FF6B35" stroke-width="2.5"/>
+      <circle cx="162" cy="118" r="42" fill="#FFF0EA" stroke="#FF6B35" stroke-width="2.5"/>
+      <circle cx="200" cy="132" r="34" fill="#FFF0EA" stroke="#FF6B35" stroke-width="2.5"/>
+      <circle cx="220" cy="148" r="26" fill="#FFF0EA" stroke="#FF6B35" stroke-width="2.5"/>
+      <circle cx="115" cy="152" r="24" fill="#FFF0EA" stroke="#FF6B35" stroke-width="2.5"/>
+      <ellipse cx="167" cy="158" rx="72" ry="36" fill="#FFF0EA"/>
+      <rect x="108" y="130" width="124" height="40" fill="#FFF0EA"/>
+      <rect x="108" y="168" width="124" height="7" rx="3.5" fill="#FF6B35" opacity="0.1"/>
+      <ellipse cx="167" cy="130" rx="18" ry="7" fill="white" stroke="#FF6B35" stroke-width="2"/>
+      <rect x="151" y="116" width="32" height="18" rx="4" fill="white" stroke="#FF6B35" stroke-width="2"/>
+      <ellipse cx="167" cy="116" rx="17" ry="9" fill="white" stroke="#FF6B35" stroke-width="2"/>
+      <rect x="130" y="142" width="3" height="24" rx="1.5" fill="#4ECDC4"/>
+      <rect x="126" y="136" width="2.5" height="12" rx="1" fill="#4ECDC4"/>
+      <rect x="130.5" y="136" width="2.5" height="12" rx="1" fill="#4ECDC4"/>
+      <rect x="135" y="136" width="2.5" height="12" rx="1" fill="#4ECDC4"/>
+      <rect x="198" y="148" width="3" height="20" rx="1.5" fill="#FF8FA3"/>
+      <ellipse cx="199.5" cy="141" rx="6.5" ry="9" fill="#FF8FA3"/>
+      <path d="M152 108 Q148 96 152 84" fill="none" stroke="#4ECDC4" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+      <path d="M167 104 Q163 92 167 80" fill="none" stroke="#FF8FA3" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+      <path d="M182 108 Q178 96 182 84" fill="none" stroke="#A8E6CF" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+      <circle cx="167" cy="182" r="6" fill="#FF6B35"/>
+      <path d="M163 182 Q167 192 167 192 Q167 192 171 182" fill="#FF6B35"/>
+      <text x="180" y="242" font-family="'Pacifico',cursive,fantasy" font-size="58" fill="url(#tg)" text-anchor="middle">Tasty</text>
+      <circle cx="152" cy="254" r="3" fill="#FF6B35" opacity=".3"/>
+      <circle cx="167" cy="254" r="3" fill="#4ECDC4" opacity=".3"/>
+      <circle cx="182" cy="254" r="3" fill="#FF8FA3" opacity=".3"/>
+      <circle cx="197" cy="254" r="3" fill="#FFD93D" opacity=".3"/>
+      <circle cx="212" cy="254" r="3" fill="#A8E6CF" opacity=".3"/>
+      <text x="180" y="296" font-family="'Poppins','Arial Black',sans-serif" font-weight="800" font-size="46" text-anchor="middle" letter-spacing="6">
+        <tspan fill="#FF6B35">M</tspan><tspan fill="#4ECDC4">E</tspan><tspan fill="#FF8FA3">A</tspan><tspan fill="#A8E6CF">L</tspan><tspan fill="#FFD93D">S</tspan>
+      </text>
+      <text x="180" y="318" font-family="'Poppins',Arial,sans-serif" font-weight="600" font-size="10" fill="#ccc" text-anchor="middle" letter-spacing="5">CLOUD KITCHEN</text>
+      <rect x="90" y="330" width="180" height="3.5" rx="2" fill="url(#bar)"/>
+    </svg>
+    <div style="font-size:13px;color:#B08060;letter-spacing:1px;margin-top:6px;margin-bottom:28px;animation:up .6s ease both .6s;opacity:0">Fresh South Indian • Cloud Kitchen 🍛</div>
+  </div>
+  <button onclick="nav('s-otp')" style="background:linear-gradient(135deg,#E8622A,#FF6B35);border:none;border-radius:16px;padding:16px 48px;font-family:system-ui,sans-serif;font-size:16px;font-weight:700;color:white;cursor:pointer;box-shadow:0 8px 24px rgba(232,98,42,.4);z-index:2;letter-spacing:.5px;animation:up .6s ease both .9s;opacity:0;transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform='scale(1.04)'">Get Started →</button>
+  <div style="display:flex;gap:8px;margin-top:24px;z-index:2;animation:up .6s ease both 1.1s;opacity:0">
+    <span style="width:8px;height:8px;border-radius:50%;background:#E8622A;display:block;animation:bounce 1.2s ease-in-out infinite"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:#4ECDC4;display:block;animation:bounce 1.2s ease-in-out infinite .2s"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:#FF8FA3;display:block;animation:bounce 1.2s ease-in-out infinite .4s"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:#FFD93D;display:block;animation:bounce 1.2s ease-in-out infinite .6s"></span>
+  </div>
+</div>
+
+<!-- OTP: Any number works, auto verify on click -->
+<div class="scr" id="s-otp" style="background:var(--cr)">
+  <div style="background:linear-gradient(145deg,var(--br2),var(--br));padding:max(44px,env(safe-area-inset-top)) 20px 28px;flex-shrink:0;position:relative;overflow:hidden;text-align:center">
+    <div style="position:absolute;right:-30px;top:-30px;width:130px;height:130px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+    <!-- Mini logo clickable -->
+    <div onclick="nav('s-splash')" style="cursor:pointer;position:relative;z-index:2">
+      <span style="font-family:cursive;font-size:26px;color:var(--or);display:block;margin-bottom:3px">Tasty</span>
+      <div style="display:flex;justify-content:center;margin-bottom:14px">
+        <span style="font-weight:800;font-size:20px;letter-spacing:3px;color:#FF6B35">M</span><span style="font-weight:800;font-size:20px;color:#4ECDC4">E</span><span style="font-weight:800;font-size:20px;color:#FF8FA3">A</span><span style="font-weight:800;font-size:20px;color:#A8E6CF">L</span><span style="font-weight:800;font-size:20px;color:#FFD93D">S</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:12px;font-size:22px;opacity:.8;position:relative;z-index:2">🍛 🥞 ☕ 🍱</div>
+  </div>
+  <div class="sb" style="padding-bottom:20px">
+    <div style="background:var(--wh);margin:0 18px;border-radius:24px;padding:22px 20px;box-shadow:0 8px 32px rgba(62,32,16,.12);margin-top:-18px;position:relative;z-index:2">
+      <!-- Phone input screen -->
+      <div id="ph-sec">
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:var(--br2);margin-bottom:5px">Welcome! 👋</div>
+        <div style="font-size:12px;color:#B08060;margin-bottom:18px;line-height:1.6">Enter any mobile number —<br><strong style="color:var(--or)">Demo mode, any number works!</strong></div>
+        <div style="display:flex;align-items:center;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;padding:13px 15px;gap:10px;margin-bottom:8px;transition:border-color .2s" id="pwrap">
+          <span>🇮🇳</span>
+          <span style="font-size:13px;font-weight:700;color:var(--br2);border-right:1.5px solid var(--cr2);padding-right:10px">+91</span>
+          <input type="tel" id="pinp" maxlength="10" placeholder="Enter any 6–10 digit number" inputmode="numeric" style="border:none;background:transparent;font-family:system-ui,sans-serif;font-size:16px;color:var(--br2);outline:none;flex:1"/>
+        </div>
+        <div style="font-size:11px;color:#B08060;margin-bottom:16px;text-align:center">💡 Try: <strong style="color:var(--or)">9876543210</strong></div>
+        <button class="btn" onclick="sendOTP()">Send OTP →</button>
+        <div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--cr2)"></div><span style="font-size:11px;color:#C4A882">or</span><div style="flex:1;height:1px;background:var(--cr2)"></div></div>
+        <button onclick="nav('s-welcome')" style="width:100%;padding:13px;background:transparent;border:1.5px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--br);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🔵 &nbsp;Continue with Google</button>
+      </div>
+      <!-- OTP verify screen -->
+      <div id="otp-sec" style="display:none">
+        <button onclick="showPh()" style="display:flex;align-items:center;gap:6px;background:none;border:none;font-family:system-ui,sans-serif;font-size:13px;color:var(--br);cursor:pointer;margin-bottom:14px;padding:0">← Back</button>
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:var(--br2);margin-bottom:5px">Verify OTP 🔐</div>
+        <div style="font-size:12px;color:#B08060;margin-bottom:4px">Code sent to <strong id="ph-show">+91 XXXXXXXX</strong></div>
+        <div style="font-size:11px;color:#B08060;margin-bottom:16px;text-align:center">💡 Enter any 4 digits — will auto verify!</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:18px">
+          <input id="ob1" maxlength="1" inputmode="numeric" oninput="otpIn(this,'','ob2')" style="width:64px;height:64px;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:24px;font-weight:700;color:var(--br2);text-align:center;outline:none;transition:border-color .2s"/>
+          <input id="ob2" maxlength="1" inputmode="numeric" oninput="otpIn(this,'ob1','ob3')" style="width:64px;height:64px;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:24px;font-weight:700;color:var(--br2);text-align:center;outline:none;transition:border-color .2s"/>
+          <input id="ob3" maxlength="1" inputmode="numeric" oninput="otpIn(this,'ob2','ob4')" style="width:64px;height:64px;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:24px;font-weight:700;color:var(--br2);text-align:center;outline:none;transition:border-color .2s"/>
+          <input id="ob4" maxlength="1" inputmode="numeric" oninput="otpIn(this,'ob3','')" style="width:64px;height:64px;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;font-family:system-ui,sans-serif;font-size:24px;font-weight:700;color:var(--br2);text-align:center;outline:none;transition:border-color .2s"/>
+        </div>
+        <div style="text-align:center;font-size:12px;color:#B08060;margin-bottom:18px">Didn't receive? <span style="color:var(--or);font-weight:600;cursor:pointer" onclick="startOTPTimer()">Resend OTP</span> &nbsp;<span style="font-weight:600;color:var(--br)" id="otptmr">0:30</span></div>
+        <button class="btn" onclick="verOTP()">Verify & Continue ✓</button>
+      </div>
+      <div style="height:4px;background:linear-gradient(90deg,var(--or),var(--tl),#FF8FA3,var(--yw));border-radius:0 0 24px 24px;margin-top:18px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME: No skip button -->
+<div class="scr" id="s-welcome" style="background:var(--cr)">
+  <div style="position:absolute;width:260px;height:260px;background:radial-gradient(#FF6B3530,transparent 70%);top:-60px;right:-60px;border-radius:50%;animation:blob 4s ease-in-out infinite"></div>
+  <div style="position:absolute;width:200px;height:200px;background:radial-gradient(#4ECDC430,transparent 70%);bottom:120px;left:-40px;border-radius:50%;animation:blob 5s ease-in-out infinite 1s"></div>
+  <!-- Top: logo only, NO skip -->
+  <div style="position:absolute;top:max(44px,env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:center;z-index:2">
+    <div style="font-family:cursive;font-size:18px;color:var(--or)">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:12px;color:var(--br);letter-spacing:2px"> MEALS</span></div>
+  </div>
+  <div style="position:relative;z-index:2;width:100%;padding:0 24px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%">
+    <div style="position:relative;display:inline-block;margin-bottom:20px;animation:popin .8s cubic-bezier(.34,1.56,.64,1)">
+      <div style="position:absolute;inset:-6px;border-radius:50%;border:2px dashed #FF6B3560;animation:spin 12s linear infinite"></div>
+      <div style="width:92px;height:92px;background:linear-gradient(135deg,var(--or),#FF8FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;box-shadow:0 12px 32px rgba(232,98,42,.3)">👨‍🍳</div>
+      <div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--yw);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2.5px solid white">✨</div>
+    </div>
+    <div style="font-size:12px;color:var(--or);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;animation:up .5s ease both .3s;opacity:0" id="greet-t">Good Morning! 🌅</div>
+    <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--br2);margin-bottom:8px;line-height:1.2;animation:up .5s ease both .5s;opacity:0">Welcome back,<br><em style="color:var(--or)">Karthick!</em></div>
+    <div style="font-size:13px;color:var(--br);line-height:1.7;max-width:290px;margin:0 auto 22px;animation:up .5s ease both .7s;opacity:0">Hungry da? 😄 Your favourite <strong style="color:var(--or)">South Indian breakfast</strong> is freshly prepared!</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:26px;animation:up .5s ease both .9s;opacity:0;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;background:var(--wh);border:1.5px solid var(--cr2);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:500;color:var(--br)">🌅 Breakfast</div>
+      <div style="display:flex;align-items:center;gap:5px;background:var(--wh);border:1.5px solid var(--cr2);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:500;color:var(--br)">🔥 Today's Special</div>
+      <div style="display:flex;align-items:center;gap:5px;background:var(--wh);border:1.5px solid var(--cr2);border-radius:20px;padding:7px 13px;font-size:12px;font-weight:500;color:var(--br)">⚡ 30 min</div>
+    </div>
+    <div style="width:100%;animation:up .5s ease both 1.1s;opacity:0">
+      <button onclick="nav('s-home')" style="width:100%;padding:15px;background:linear-gradient(135deg,var(--br2),var(--br));border:none;border-radius:16px;font-family:system-ui,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 8px 24px rgba(62,32,16,.25);margin-bottom:10px">
+        Let's Explore Food
+        <div style="width:28px;height:28px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px">→</div>
+      </button>
+      <div style="text-align:center;font-size:12px;color:#B08060">🎁 <strong style="color:var(--or)">Free delivery</strong> on first order!</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME PAGE -->
+<div class="scr" id="s-home">
+  <div class="sb" style="padding-bottom:70px">
+    <div style="background:var(--wh);padding:max(44px,env(safe-area-inset-top)) 16px 14px;border-bottom:1px solid var(--cr2);position:sticky;top:0;z-index:10">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <!-- LOGO in home header — clickable → splash -->
+        <div onclick="nav('s-splash')" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <svg width="34" height="34" viewBox="0 0 360 370" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="130" cy="138" r="32" fill="#FFF0EA" stroke="#FF6B35" stroke-width="3"/>
+            <circle cx="162" cy="118" r="42" fill="#FFF0EA" stroke="#FF6B35" stroke-width="3"/>
+            <circle cx="200" cy="132" r="34" fill="#FFF0EA" stroke="#FF6B35" stroke-width="3"/>
+            <circle cx="220" cy="148" r="26" fill="#FFF0EA" stroke="#FF6B35" stroke-width="3"/>
+            <circle cx="115" cy="152" r="24" fill="#FFF0EA" stroke="#FF6B35" stroke-width="3"/>
+            <ellipse cx="167" cy="158" rx="72" ry="36" fill="#FFF0EA"/>
+            <rect x="108" y="130" width="124" height="40" fill="#FFF0EA"/>
+            <ellipse cx="167" cy="130" rx="18" ry="7" fill="white" stroke="#FF6B35" stroke-width="2.5"/>
+            <rect x="151" y="116" width="32" height="18" rx="4" fill="white" stroke="#FF6B35" stroke-width="2.5"/>
+            <ellipse cx="167" cy="116" rx="17" ry="9" fill="white" stroke="#FF6B35" stroke-width="2.5"/>
+            <rect x="130" y="142" width="3" height="22" rx="1.5" fill="#4ECDC4"/>
+            <rect x="198" y="148" width="3" height="18" rx="1.5" fill="#FF8FA3"/>
+            <ellipse cx="199.5" cy="141" rx="6.5" ry="9" fill="#FF8FA3"/>
+            <circle cx="167" cy="174" r="5" fill="#FF6B35"/>
+            <path d="M163 174 Q167 183 167 183 Q167 183 171 174" fill="#FF6B35"/>
+          </svg>
+          <div>
+            <div style="font-family:cursive;font-size:17px;color:var(--or);line-height:1">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:11px;color:var(--br);letter-spacing:2px">MEALS</span></div>
+            <div style="font-size:9px;color:#B08060;letter-spacing:1.5px;text-transform:uppercase">Cloud Kitchen</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="alert('🔔 Notifications')" style="width:34px;height:34px;background:var(--cr);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;position:relative">🔔<span style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:var(--or);border-radius:50%;font-size:8px;color:white;display:flex;align-items:center;justify-content:center;font-weight:700">2</span></button>
+          <button onclick="nav('s-profile')" style="width:34px;height:34px;background:var(--cr);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">👤</button>
+        </div>
+      </div>
+      <!-- SEARCH BAR — functional -->
+      <div style="display:flex;align-items:center;background:var(--cr);border:2px solid var(--cr2);border-radius:14px;padding:11px 14px;gap:9px" onclick="nav('s-search')">
+        <span style="font-size:16px;color:#C4A882">🔍</span>
+        <span style="font-size:13px;color:#C4A882;font-family:system-ui,sans-serif">Search idly, dosa, briyani...</span>
+        <div style="margin-left:auto;background:var(--or);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600;color:white">Search</div>
+      </div>
+    </div>
+    <div style="padding:16px 16px 0">
+      <div style="font-size:12px;color:var(--or);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px" id="hgreet">Good Morning!</div>
+      <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--br2);line-height:1.2">What are you <span style="color:var(--or);font-style:italic">craving</span> today?</div>
+    </div>
+    <!-- HERO -->
+    <div style="margin:14px 16px 0;background:linear-gradient(135deg,var(--br2),var(--br));border-radius:20px;padding:20px 18px;position:relative;overflow:hidden;min-height:128px">
+      <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:var(--or);border-radius:50%;opacity:.15"></div>
+      <div style="background:var(--or);color:white;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 9px;border-radius:18px;display:inline-block;margin-bottom:8px;text-transform:uppercase">Today's Special</div>
+      <div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:white;line-height:1.3;margin-bottom:12px;position:relative;z-index:1">Fresh <span style="color:#FF8FA3">South Indian</span><br>Breakfast Ready! 🔥</div>
+      <button onclick="nav('s-breakfast')" style="background:var(--or);color:white;border:none;border-radius:11px;padding:9px 18px;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;cursor:pointer;position:relative;z-index:1">Order Now →</button>
+      <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:54px;z-index:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))">🍛</div>
+    </div>
+    <!-- 4 CATEGORY CARDS -->
+    <div style="padding:18px 16px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+        <div style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:var(--br2)">Choose Your Meal</div>
+        <div style="font-size:11px;color:var(--or);font-weight:600" id="h-timelbl">🌅 Breakfast Time</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div onclick="nav('s-breakfast')" style="background:linear-gradient(135deg,#FF6B35,#FF8C42);border-radius:18px;padding:15px 13px;cursor:pointer;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;width:70px;height:70px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+          <div style="font-size:32px;margin-bottom:8px">🌅</div>
+          <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:white;margin-bottom:2px">Breakfast</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.75);margin-bottom:8px">7AM–11AM • 7 items</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Idly</span>
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Dosa</span>
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Poori</span>
+          </div>
+          <div style="position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.2);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:white;font-size:13px">→</div>
+        </div>
+        <div onclick="nav('s-lunch')" style="background:linear-gradient(135deg,#E65100,#FF6D00);border-radius:18px;padding:15px 13px;cursor:pointer;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;width:70px;height:70px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+          <div style="font-size:32px;margin-bottom:8px">☀️</div>
+          <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:white;margin-bottom:2px">Lunch</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.75);margin-bottom:8px">11AM–3PM • 8 items</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Briyani</span>
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Meals</span>
+          </div>
+          <div style="position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.2);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:white;font-size:13px">→</div>
+        </div>
+        <div onclick="nav('s-snacks')" style="background:linear-gradient(135deg,#6A1B9A,#8E24AA);border-radius:18px;padding:15px 13px;cursor:pointer;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;width:70px;height:70px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+          <div style="font-size:32px;margin-bottom:8px">🌆</div>
+          <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:white;margin-bottom:2px">Snacks</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.75);margin-bottom:8px">3PM–6PM • 8 items</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">💪 Gym</span>
+            <span style="background:rgba(255,255,255,.2);color:white;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Vada</span>
+          </div>
+          <div style="position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.2);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:white;font-size:13px">→</div>
+        </div>
+        <div onclick="nav('s-din')" style="background:linear-gradient(135deg,#0D1B2A,#1B2B3A);border-radius:18px;padding:15px 13px;cursor:pointer;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;width:70px;height:70px;background:rgba(255,107,53,.15);border-radius:50%"></div>
+          <div style="position:absolute;top:10px;left:14px;width:2px;height:2px;background:white;border-radius:50%;opacity:.8"></div>
+          <div style="position:absolute;top:18px;left:28px;width:2px;height:2px;background:white;border-radius:50%;opacity:.6"></div>
+          <div style="position:absolute;top:8px;right:28px;width:2px;height:2px;background:white;border-radius:50%;opacity:.7"></div>
+          <div style="font-size:32px;margin-bottom:8px">🌙</div>
+          <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:white;margin-bottom:2px">Dinner</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:8px">6PM–10PM • 10 items</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">
+            <span style="background:rgba(255,107,53,.3);color:#FF8FA3;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">Chapati</span>
+            <span style="background:rgba(255,107,53,.3);color:#FF8FA3;font-size:9px;font-weight:600;padding:2px 6px;border-radius:7px">🌿</span>
+          </div>
+          <div style="position:absolute;bottom:10px;right:10px;background:rgba(255,107,53,.3);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:white;font-size:13px">→</div>
+        </div>
+      </div>
+    </div>
+    <!-- QUICK INFO -->
+    <div style="padding:13px 16px 0">
+      <div style="display:flex;gap:9px">
+        <div style="flex:1;background:var(--wh);border-radius:12px;padding:11px 6px;border:1px solid var(--cr2);text-align:center"><div style="font-size:20px;margin-bottom:3px">🛵</div><div style="font-size:11px;font-weight:700;color:var(--br2)">30 mins</div><div style="font-size:9px;color:#B08060">Delivery</div></div>
+        <div style="flex:1;background:var(--wh);border-radius:12px;padding:11px 6px;border:1px solid var(--cr2);text-align:center"><div style="font-size:20px;margin-bottom:3px">🌿</div><div style="font-size:11px;font-weight:700;color:var(--br2)">100% Veg</div><div style="font-size:9px;color:#B08060">Pure Veg</div></div>
+        <div style="flex:1;background:var(--wh);border-radius:12px;padding:11px 6px;border:1px solid var(--cr2);text-align:center"><div style="font-size:20px;margin-bottom:3px">👨‍🍳</div><div style="font-size:11px;font-weight:700;color:var(--br2)">Fresh</div><div style="font-size:9px;color:#B08060">Daily made</div></div>
+        <div style="flex:1;background:var(--wh);border-radius:12px;padding:11px 6px;border:1px solid var(--cr2);text-align:center"><div style="font-size:20px;margin-bottom:3px">⭐</div><div style="font-size:11px;font-weight:700;color:var(--br2)">4.8★</div><div style="font-size:9px;color:#B08060">Rating</div></div>
+      </div>
+    </div>
+    <!-- POPULAR TODAY -->
+    <div style="padding:15px 16px 0">
+      <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:var(--br2);margin-bottom:11px">🔥 Popular Today</div>
+      <div style="display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px">
+        <div onclick="nav('s-breakfast')" style="min-width:120px;background:var(--wh);border-radius:14px;overflow:hidden;border:1px solid var(--cr2);flex-shrink:0;cursor:pointer"><div style="height:82px;overflow:hidden"><img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=200&q=75" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='var(--cr2)'"/></div><div style="padding:8px 9px"><div style="font-size:11px;font-weight:700;color:var(--br2);margin-bottom:1px">Idly (2 pcs)</div><div style="font-size:13px;font-weight:700;color:var(--or)">₹26</div></div></div>
+        <div onclick="nav('s-lunch')" style="min-width:120px;background:var(--wh);border-radius:14px;overflow:hidden;border:1px solid var(--cr2);flex-shrink:0;cursor:pointer"><div style="height:82px;overflow:hidden"><img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&q=75" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='var(--cr2)'"/></div><div style="padding:8px 9px"><div style="font-size:11px;font-weight:700;color:var(--br2);margin-bottom:1px">Veg Briyani</div><div style="font-size:13px;font-weight:700;color:var(--or)">₹70</div></div></div>
+        <div onclick="nav('s-snacks')" style="min-width:120px;background:var(--wh);border-radius:14px;overflow:hidden;border:1px solid var(--cr2);flex-shrink:0;cursor:pointer"><div style="height:82px;overflow:hidden"><img src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=200&q=75" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='var(--cr2)'"/></div><div style="padding:8px 9px"><div style="font-size:11px;font-weight:700;color:var(--br2);margin-bottom:1px">Paneer Tikka</div><div style="font-size:13px;font-weight:700;color:var(--or)">₹80</div></div></div>
+        <div onclick="nav('s-din')" style="min-width:120px;background:var(--wh);border-radius:14px;overflow:hidden;border:1px solid var(--cr2);flex-shrink:0;cursor:pointer"><div style="height:82px;overflow:hidden"><img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=200&q=75" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='var(--cr2)'"/></div><div style="padding:8px 9px"><div style="font-size:11px;font-weight:700;color:var(--br2);margin-bottom:1px">Paneer Butter</div><div style="font-size:13px;font-weight:700;color:var(--or)">₹120</div></div></div>
+      </div>
+    </div>
+    <!-- PROMO -->
+    <div style="margin:14px 16px 0;background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-radius:16px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:10px;font-weight:700;color:var(--gn);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">First Order</div><div style="font-size:14px;font-weight:700;color:var(--br2);margin-bottom:2px">Free Delivery! 🎁</div><div style="font-size:11px;color:#5BAD72">Use code: <strong>FIRST20</strong></div></div>
+      <div style="font-size:36px">🚚</div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nb on" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl">Home</span><div class="ndot"></div></button>
+    <button class="nb" onclick="gotoMenu()"><span class="ni">🍽️</span><span class="nl">Menu</span></button>
+    <button class="nb" onclick="gotoCart()"><span class="ni">🛒</span><span class="nl">Cart</span></button>
+    <button class="nb" onclick="nav('s-profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- SEARCH SCREEN -->
+<div class="scr" id="s-search" style="background:var(--cr)">
+  <div style="background:var(--wh);padding:max(44px,env(safe-area-inset-top)) 14px 12px;border-bottom:1px solid var(--cr2);flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="bbtn" onclick="nav('s-home')">←</button>
+      <div style="flex:1;display:flex;align-items:center;background:var(--cr);border:2px solid var(--or);border-radius:14px;padding:10px 14px;gap:9px">
+        <span style="font-size:16px;color:var(--or)">🔍</span>
+        <input type="text" id="sinp" placeholder="Search idly, dosa, briyani..." autofocus style="border:none;background:transparent;font-family:system-ui,sans-serif;font-size:14px;color:var(--br2);outline:none;flex:1" oninput="doSearch(this.value)"/>
+        <button onclick="document.getElementById('sinp').value='';doSearch('')" style="background:none;border:none;font-size:16px;cursor:pointer;color:#C4A882">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="sb" style="padding:14px" id="sresults">
+    <div style="text-align:center;padding:40px 20px;color:#B08060">
+      <div style="font-size:48px;margin-bottom:12px">🔍</div>
+      <div style="font-size:15px;font-weight:600;color:var(--br2);margin-bottom:6px">Search your favourite food</div>
+      <div style="font-size:12px">Try: Idly, Dosa, Briyani, Vada, Paneer...</div>
+    </div>
+  </div>
+</div>
+
+<!-- BREAKFAST MENU -->
+<div class="scr" id="s-breakfast">
+  <div class="mhdr">
+    <div class="hrow"><div class="hl">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:11px;color:var(--br);letter-spacing:2px"> MEALS</span></div><div class="tp2"><div class="tdot" style="background:#FFB300"></div><span style="color:var(--br)">🌅 Breakfast</span></div></div>
+    <div class="mh">Breakfast Menu</div>
+    <div class="mm"><span>7 items</span> • Till 11AM • ✓ Fresh</div>
+  </div>
+  <div class="ctabs">
+    <div class="ctb on" onclick="fCat(this,'sb-scroll','data-cat','all')">🍽️ All</div>
+    <div class="ctb" onclick="fCat(this,'sb-scroll','data-cat','dosa')">🥞 Dosa</div>
+    <div class="ctb" onclick="fCat(this,'sb-scroll','data-cat','other')">🍱 Others</div>
+  </div>
+  <div class="sb" style="padding:12px 13px 80px" id="sb-scroll">
+    <div class="slbl">🌅 Morning Specials</div>
+    <div class="fc" data-cat="other"><div class="fi"><img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=220&q=80" alt="Idly" onerror="this.parentElement.innerHTML='<div class=fi-ph>🫓</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tb">Best Seller</div><div class="fn">Idly (2 pcs)</div><div class="fd">Soft steamed rice cakes with sambar & coconut chutney</div></div><div class="fbot"><div class="fp">₹26</div><div class="qc" id="qc-b-idly" style="display:none"><button class="qb" onclick="cQ('b-idly',-1,26,'Idly (2 pcs)')">−</button><span class="qn" id="qn-b-idly">0</span><button class="qb" onclick="cQ('b-idly',1,26,'Idly (2 pcs)')">+</button></div><button class="ab" id="ab-b-idly" onclick="addI('b-idly',26,'Idly (2 pcs)')">+ Add</button></div></div><button class="hbt" id="hb-b-idly" onclick="toggleH('b-idly','Idly (2 pcs)',26,'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="dosa"><div class="fi"><img src="https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=220&q=80" alt="Plain Dosa" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥞</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tp">Popular</div><div class="fn">Plain Dosa</div><div class="fd">Crispy thin crepe with sambar & 2 chutneys</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-b-dosa" style="display:none"><button class="qb" onclick="cQ('b-dosa',-1,40,'Plain Dosa')">−</button><span class="qn" id="qn-b-dosa">0</span><button class="qb" onclick="cQ('b-dosa',1,40,'Plain Dosa')">+</button></div><button class="ab" id="ab-b-dosa" onclick="addI('b-dosa',40,'Plain Dosa')">+ Add</button></div></div><button class="hbt" id="hb-b-dosa" onclick="toggleH('b-dosa','Plain Dosa',40,'https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="dosa"><div class="fi"><img src="https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=220&q=80" alt="Ghee Dosa" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥞</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg ts">Chef's Pick</div><div class="fn">Ghee Dosa</div><div class="fd">Golden crispy dosa drizzled with pure ghee</div></div><div class="fbot"><div class="fp">₹60</div><div class="qc" id="qc-b-ghee" style="display:none"><button class="qb" onclick="cQ('b-ghee',-1,60,'Ghee Dosa')">−</button><span class="qn" id="qn-b-ghee">0</span><button class="qb" onclick="cQ('b-ghee',1,60,'Ghee Dosa')">+</button></div><button class="ab" id="ab-b-ghee" onclick="addI('b-ghee',60,'Ghee Dosa')">+ Add</button></div></div><button class="hbt" id="hb-b-ghee" onclick="toggleH('b-ghee','Ghee Dosa',60,'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="dosa"><div class="fi"><img src="https://images.unsplash.com/photo-1645177628172-a5ed0f2cce34?w=220&q=80" alt="Ravi Dosa" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥞</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tn">New</div><div class="fn">Ravi Dosa</div><div class="fd">Semolina dosa, lacy & crispy with fresh herbs</div></div><div class="fbot"><div class="fp">₹55</div><div class="qc" id="qc-b-ravi" style="display:none"><button class="qb" onclick="cQ('b-ravi',-1,55,'Ravi Dosa')">−</button><span class="qn" id="qn-b-ravi">0</span><button class="qb" onclick="cQ('b-ravi',1,55,'Ravi Dosa')">+</button></div><button class="ab" id="ab-b-ravi" onclick="addI('b-ravi',55,'Ravi Dosa')">+ Add</button></div></div><button class="hbt" id="hb-b-ravi" onclick="toggleH('b-ravi','Ravi Dosa',55,'https://images.unsplash.com/photo-1645177628172-a5ed0f2cce34?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="dosa"><div class="fi"><img src="https://images.unsplash.com/photo-1574653853027-5382a3d23a15?w=220&q=80" alt="Onion Dosa" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥞</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tp">Popular</div><div class="fn">Onion Dosa</div><div class="fd">Crispy dosa with spiced onions & curry leaves</div></div><div class="fbot"><div class="fp">₹55</div><div class="qc" id="qc-b-onion" style="display:none"><button class="qb" onclick="cQ('b-onion',-1,55,'Onion Dosa')">−</button><span class="qn" id="qn-b-onion">0</span><button class="qb" onclick="cQ('b-onion',1,55,'Onion Dosa')">+</button></div><button class="ab" id="ab-b-onion" onclick="addI('b-onion',55,'Onion Dosa')">+ Add</button></div></div><button class="hbt" id="hb-b-onion" onclick="toggleH('b-onion','Onion Dosa',55,'https://images.unsplash.com/photo-1574653853027-5382a3d23a15?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="other"><div class="fi"><img src="https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=220&q=80" alt="Poori" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍞</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tb">Best Seller</div><div class="fn">Poori (2 pcs)</div><div class="fd">Fluffy deep-fried bread with potato masala</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-b-poori" style="display:none"><button class="qb" onclick="cQ('b-poori',-1,40,'Poori (2 pcs)')">−</button><span class="qn" id="qn-b-poori">0</span><button class="qb" onclick="cQ('b-poori',1,40,'Poori (2 pcs)')">+</button></div><button class="ab" id="ab-b-poori" onclick="addI('b-poori',40,'Poori (2 pcs)')">+ Add</button></div></div><button class="hbt" id="hb-b-poori" onclick="toggleH('b-poori','Poori (2 pcs)',40,'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="other"><div class="fi"><img src="https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=220&q=80" alt="Fruit Salad" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍓</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tn">Healthy</div><div class="fn">Fruit Salad</div><div class="fd">Fresh seasonal fruits with honey drizzle</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-b-fruit" style="display:none"><button class="qb" onclick="cQ('b-fruit',-1,40,'Fruit Salad')">−</button><span class="qn" id="qn-b-fruit">0</span><button class="qb" onclick="cQ('b-fruit',1,40,'Fruit Salad')">+</button></div><button class="ab" id="ab-b-fruit" onclick="addI('b-fruit',40,'Fruit Salad')">+ Add</button></div></div><button class="hbt" id="hb-b-fruit" onclick="toggleH('b-fruit','Fruit Salad',40,'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=100&q=75')">🤍</button></div>
+  </div>
+  <div class="cbar" id="cbar-b"><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:var(--or);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white" id="cbc-b">0</div><div style="font-size:12px;color:rgba(255,255,255,.7)"><div id="cbt-b">items</div><strong id="cbp-b" style="color:white;font-size:13px">₹0</strong></div></div><button onclick="gotoCart()" style="background:var(--or);border:none;border-radius:10px;padding:8px 14px;font-family:system-ui,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer">View Cart →</button></div>
+  <div class="bnav">
+    <button class="nb" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nb on"><span class="ni">🍽️</span><span class="nl">Menu</span><div class="ndot"></div></button>
+    <button class="nb" onclick="gotoCart()"><span class="ni">🛒</span><span class="nl">Cart</span></button>
+    <button class="nb" onclick="nav('s-profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- LUNCH -->
+<div class="scr" id="s-lunch">
+  <div class="mhdr"><div class="hrow"><div class="hl">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:11px;color:var(--br);letter-spacing:2px"> MEALS</span></div><div class="tp2"><div class="tdot" style="background:#FFB300"></div><span style="color:var(--br)">☀️ Lunch</span></div></div><div class="mh">Lunch Menu</div><div class="mm"><span>8 items</span> • 11AM–3PM • ✓ Fresh</div></div>
+  <div class="ctabs">
+    <div class="ctb on" onclick="fCat(this,'sl-scroll','data-cat','all')">🍽️ All</div>
+    <div class="ctb" onclick="fCat(this,'sl-scroll','data-cat','rice')">🍚 Rice</div>
+    <div class="ctb" onclick="fCat(this,'sl-scroll','data-cat','bri')">🍛 Briyani</div>
+    <div class="ctb" onclick="fCat(this,'sl-scroll','data-cat','meals')">🥘 Meals</div>
+  </div>
+  <div class="sb" style="padding:12px 13px 80px" id="sl-scroll">
+    <div class="slbl">🥘 Meals & Rice</div>
+    <div class="fc" data-cat="meals"><div class="fi"><img src="https://images.unsplash.com/photo-1567337710282-00832b415979?w=220&q=80" alt="Veg Meals" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥘</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg ts">Full Meals</div><div class="fn">Veg Meals</div><div class="fd">Rice, sambar, rasam, 3 veggies, papad & pickle</div></div><div class="fbot"><div class="fp">₹100</div><div class="qc" id="qc-l-vm" style="display:none"><button class="qb" onclick="cQ('l-vm',-1,100,'Veg Meals')">−</button><span class="qn" id="qn-l-vm">0</span><button class="qb" onclick="cQ('l-vm',1,100,'Veg Meals')">+</button></div><button class="ab" id="ab-l-vm" onclick="addI('l-vm',100,'Veg Meals')">+ Add</button></div></div><button class="hbt" id="hb-l-vm" onclick="toggleH('l-vm','Veg Meals',100,'https://images.unsplash.com/photo-1567337710282-00832b415979?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="rice"><div class="fi"><img src="https://images.unsplash.com/photo-1596797038530-2c107229654b?w=220&q=80" alt="Curd Rice" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍚</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tp">Popular</div><div class="fn">Curd Rice</div><div class="fd">Creamy yogurt rice with tempered mustard & curry leaves</div></div><div class="fbot"><div class="fp">₹50</div><div class="qc" id="qc-l-cr" style="display:none"><button class="qb" onclick="cQ('l-cr',-1,50,'Curd Rice')">−</button><span class="qn" id="qn-l-cr">0</span><button class="qb" onclick="cQ('l-cr',1,50,'Curd Rice')">+</button></div><button class="ab" id="ab-l-cr" onclick="addI('l-cr',50,'Curd Rice')">+ Add</button></div></div><button class="hbt" id="hb-l-cr" onclick="toggleH('l-cr','Curd Rice',50,'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="rice"><div class="fi"><img src="https://images.unsplash.com/photo-1516684732162-798a0062be99?w=220&q=80" alt="Tomato Rice" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍅</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tb">Best Seller</div><div class="fn">Tomato Rice</div><div class="fd">Tangy spiced rice with fresh tomatoes & spices</div></div><div class="fbot"><div class="fp">₹50</div><div class="qc" id="qc-l-tr" style="display:none"><button class="qb" onclick="cQ('l-tr',-1,50,'Tomato Rice')">−</button><span class="qn" id="qn-l-tr">0</span><button class="qb" onclick="cQ('l-tr',1,50,'Tomato Rice')">+</button></div><button class="ab" id="ab-l-tr" onclick="addI('l-tr',50,'Tomato Rice')">+ Add</button></div></div><button class="hbt" id="hb-l-tr" onclick="toggleH('l-tr','Tomato Rice',50,'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="rice"><div class="fi"><img src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=220&q=80" alt="Lemon Rice" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍋</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tn">Fresh</div><div class="fn">Lemon Rice</div><div class="fd">Zesty lemon flavoured rice with peanuts & turmeric</div></div><div class="fbot"><div class="fp">₹50</div><div class="qc" id="qc-l-lr" style="display:none"><button class="qb" onclick="cQ('l-lr',-1,50,'Lemon Rice')">−</button><span class="qn" id="qn-l-lr">0</span><button class="qb" onclick="cQ('l-lr',1,50,'Lemon Rice')">+</button></div><button class="ab" id="ab-l-lr" onclick="addI('l-lr',50,'Lemon Rice')">+ Add</button></div></div><button class="hbt" id="hb-l-lr" onclick="toggleH('l-lr','Lemon Rice',50,'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="rice"><div class="fi"><img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=220&q=80" alt="Tamarind Rice" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍚</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tp">Popular</div><div class="fn">Tamarind Rice</div><div class="fd">Traditional puliyodarai with peanuts & sesame</div></div><div class="fbot"><div class="fp">₹50</div><div class="qc" id="qc-l-tar" style="display:none"><button class="qb" onclick="cQ('l-tar',-1,50,'Tamarind Rice')">−</button><span class="qn" id="qn-l-tar">0</span><button class="qb" onclick="cQ('l-tar',1,50,'Tamarind Rice')">+</button></div><button class="ab" id="ab-l-tar" onclick="addI('l-tar',50,'Tamarind Rice')">+ Add</button></div></div><button class="hbt" id="hb-l-tar" onclick="toggleH('l-tar','Tamarind Rice',50,'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=100&q=75')">🤍</button></div>
+    <div class="slbl" style="margin-top:5px">🍛 Briyani Special</div>
+    <div class="fc" data-cat="bri"><div class="fi"><img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=220&q=80" alt="Veg Briyani" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍛</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tb">Best Seller</div><div class="fn">Veg Briyani</div><div class="fd">Aromatic basmati rice with fresh vegetables & whole spices</div></div><div class="fbot"><div class="fp">₹70</div><div class="qc" id="qc-l-vb" style="display:none"><button class="qb" onclick="cQ('l-vb',-1,70,'Veg Briyani')">−</button><span class="qn" id="qn-l-vb">0</span><button class="qb" onclick="cQ('l-vb',1,70,'Veg Briyani')">+</button></div><button class="ab" id="ab-l-vb" onclick="addI('l-vb',70,'Veg Briyani')">+ Add</button></div></div><button class="hbt" id="hb-l-vb" onclick="toggleH('l-vb','Veg Briyani',70,'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="bri"><div class="fi"><img src="https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=220&q=80" alt="Paneer Briyani" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍛</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg ts">Chef's Pick</div><div class="fn">Paneer Briyani</div><div class="fd">Soft paneer cubes layered with fragrant saffron rice</div></div><div class="fbot"><div class="fp">₹80</div><div class="qc" id="qc-l-pb" style="display:none"><button class="qb" onclick="cQ('l-pb',-1,80,'Paneer Briyani')">−</button><span class="qn" id="qn-l-pb">0</span><button class="qb" onclick="cQ('l-pb',1,80,'Paneer Briyani')">+</button></div><button class="ab" id="ab-l-pb" onclick="addI('l-pb',80,'Paneer Briyani')">+ Add</button></div></div><button class="hbt" id="hb-l-pb" onclick="toggleH('l-pb','Paneer Briyani',80,'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="bri"><div class="fi"><img src="https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=220&q=80" alt="Mushroom Briyani" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍄</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tn">New</div><div class="fn">Mushroom Briyani</div><div class="fd">Earthy mushrooms slow-cooked with basmati & spices</div></div><div class="fbot"><div class="fp">₹80</div><div class="qc" id="qc-l-mb" style="display:none"><button class="qb" onclick="cQ('l-mb',-1,80,'Mushroom Briyani')">−</button><span class="qn" id="qn-l-mb">0</span><button class="qb" onclick="cQ('l-mb',1,80,'Mushroom Briyani')">+</button></div><button class="ab" id="ab-l-mb" onclick="addI('l-mb',80,'Mushroom Briyani')">+ Add</button></div></div><button class="hbt" id="hb-l-mb" onclick="toggleH('l-mb','Mushroom Briyani',80,'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=100&q=75')">🤍</button></div>
+  </div>
+  <div class="cbar" id="cbar-l"><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:var(--or);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white" id="cbc-l">0</div><div style="font-size:12px;color:rgba(255,255,255,.7)"><div id="cbt-l">items</div><strong id="cbp-l" style="color:white;font-size:13px">₹0</strong></div></div><button onclick="gotoCart()" style="background:var(--or);border:none;border-radius:10px;padding:8px 14px;font-family:system-ui,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer">View Cart →</button></div>
+  <div class="bnav"><button class="nb" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl">Home</span></button><button class="nb on"><span class="ni">🍽️</span><span class="nl">Menu</span><div class="ndot"></div></button><button class="nb" onclick="gotoCart()"><span class="ni">🛒</span><span class="nl">Cart</span></button><button class="nb" onclick="nav('s-profile')"><span class="ni">👤</span><span class="nl">Profile</span></button></div>
+</div>
+
+<!-- SNACKS -->
+<div class="scr" id="s-snacks">
+  <div class="mhdr"><div class="hrow"><div class="hl">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:11px;color:var(--br);letter-spacing:2px"> MEALS</span></div><div class="tp2" style="background:#F3E5F5;border-color:#CE93D850"><div class="tdot" style="background:#AB47BC"></div><span style="color:#6A1B9A">🌆 Snacks</span></div></div><div class="mh">Evening Snacks</div><div class="mm"><span>8 items</span> • 3PM–6PM • 💪 Gym Friendly</div></div>
+  <div class="ctabs"><div class="ctb on" onclick="fCat(this,'ssn-scroll','data-sn','all')">🍽️ All</div><div class="ctb" onclick="fCat(this,'ssn-scroll','data-sn','gym')">💪 Gym</div><div class="ctb" onclick="fCat(this,'ssn-scroll','data-sn','snack')">🍟 Snacks</div><div class="ctb" onclick="fCat(this,'ssn-scroll','data-sn','drink')">🥤 Drinks</div></div>
+  <div class="sb" style="padding:12px 13px 80px" id="ssn-scroll">
+    <div class="gbanner" data-sn="gym"><div><div style="font-size:9px;font-weight:700;color:#A5D6A7;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">💪 Gym Fuel</div><div style="font-size:13px;font-weight:700;color:white">High Protein Picks</div><div style="font-size:10px;color:#A5D6A7;margin-top:1px">For fitness lovers</div></div><div style="font-size:36px">🏋️</div></div>
+    <div class="slbl">💪 Gym Fuel</div>
+    <div class="fc" data-sn="gym"><div class="fi"><img src="https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=220&q=80" alt="Eggs" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥚</div>'"/><div class="ctg" style="background:rgba(46,125,50,.9);color:white">💪</div></div><div class="fb"><div><div class="ftg tg">High Protein</div><div class="fn">Boiled Eggs (2 pcs)</div><div class="fd">Hard boiled with pepper & rock salt</div></div><div class="fbot"><div class="fp">₹30</div><div class="qc" id="qc-sn-eg" style="display:none"><button class="qb" onclick="cQ('sn-eg',-1,30,'Boiled Eggs')">−</button><span class="qn" id="qn-sn-eg">0</span><button class="qb" onclick="cQ('sn-eg',1,30,'Boiled Eggs')">+</button></div><button class="ab g" id="ab-sn-eg" onclick="addI('sn-eg',30,'Boiled Eggs')">+ Add</button></div></div><button class="hbt" id="hb-sn-eg" onclick="toggleH('sn-eg','Boiled Eggs',30,'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-sn="gym"><div class="fi"><img src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=220&q=80" alt="Paneer Tikka" onerror="this.parentElement.innerHTML='<div class=fi-ph>🧆</div>'"/><div class="ctg" style="background:rgba(46,125,50,.9);color:white">💪</div></div><div class="fb"><div><div class="ftg tg">High Protein</div><div class="fn">Paneer Tikka</div><div class="fd">Grilled cottage cheese with spiced marinade</div></div><div class="fbot"><div class="fp">₹80</div><div class="qc" id="qc-sn-pt" style="display:none"><button class="qb" onclick="cQ('sn-pt',-1,80,'Paneer Tikka')">−</button><span class="qn" id="qn-sn-pt">0</span><button class="qb" onclick="cQ('sn-pt',1,80,'Paneer Tikka')">+</button></div><button class="ab g" id="ab-sn-pt" onclick="addI('sn-pt',80,'Paneer Tikka')">+ Add</button></div></div><button class="hbt" id="hb-sn-pt" onclick="toggleH('sn-pt','Paneer Tikka',80,'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-sn="gym"><div class="fi"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=220&q=80" alt="Sprouts" onerror="this.parentElement.innerHTML='<div class=fi-ph>🌱</div>'"/><div class="ctg" style="background:rgba(46,125,50,.9);color:white">💪</div></div><div class="fb"><div><div class="ftg th">Healthy</div><div class="fn">Sprouts Salad</div><div class="fd">Mixed sprouts with lemon & chaat masala</div></div><div class="fbot"><div class="fp">₹50</div><div class="qc" id="qc-sn-sp" style="display:none"><button class="qb" onclick="cQ('sn-sp',-1,50,'Sprouts Salad')">−</button><span class="qn" id="qn-sn-sp">0</span><button class="qb" onclick="cQ('sn-sp',1,50,'Sprouts Salad')">+</button></div><button class="ab g" id="ab-sn-sp" onclick="addI('sn-sp',50,'Sprouts Salad')">+ Add</button></div></div><button class="hbt" id="hb-sn-sp" onclick="toggleH('sn-sp','Sprouts Salad',50,'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&q=75')">🤍</button></div>
+    <div class="slbl" style="margin-top:5px">🍟 Classic Snacks</div>
+    <div class="fc" data-sn="snack"><div class="fi"><img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?w=220&q=80" alt="Vada" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍩</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tb">Best Seller</div><div class="fn">Vada (2 pcs)</div><div class="fd">Crispy medu vada with sambar & chutney</div></div><div class="fbot"><div class="fp">₹30</div><div class="qc" id="qc-sn-va" style="display:none"><button class="qb" onclick="cQ('sn-va',-1,30,'Vada')">−</button><span class="qn" id="qn-sn-va">0</span><button class="qb" onclick="cQ('sn-va',1,30,'Vada')">+</button></div><button class="ab" id="ab-sn-va" onclick="addI('sn-va',30,'Vada (2 pcs)')">+ Add</button></div></div><button class="hbt" id="hb-sn-va" onclick="toggleH('sn-va','Vada',30,'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-sn="snack"><div class="fi"><img src="https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=220&q=80" alt="Bajji" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍟</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tp">Popular</div><div class="fn">Bajji (3 pcs)</div><div class="fd">Hot & crispy onion bajji with mint chutney</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-sn-ba" style="display:none"><button class="qb" onclick="cQ('sn-ba',-1,40,'Bajji')">−</button><span class="qn" id="qn-sn-ba">0</span><button class="qb" onclick="cQ('sn-ba',1,40,'Bajji')">+</button></div><button class="ab" id="ab-sn-ba" onclick="addI('sn-ba',40,'Bajji (3 pcs)')">+ Add</button></div></div><button class="hbt" id="hb-sn-ba" onclick="toggleH('sn-ba','Bajji',40,'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=100&q=75')">🤍</button></div>
+    <div class="slbl" style="margin-top:5px">🥤 Fresh Drinks</div>
+    <div class="fc" data-sn="drink"><div class="fi"><img src="https://images.unsplash.com/photo-1553530979-212ac1900247?w=220&q=80" alt="Banana Shake" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍌</div>'"/><div class="ctg" style="background:rgba(46,125,50,.9);color:white">💪</div></div><div class="fb"><div><div class="ftg tg">Protein</div><div class="fn">Banana Shake</div><div class="fd">Thick banana shake with milk & honey</div></div><div class="fbot"><div class="fp">₹60</div><div class="qc" id="qc-sn-bs" style="display:none"><button class="qb" onclick="cQ('sn-bs',-1,60,'Banana Shake')">−</button><span class="qn" id="qn-sn-bs">0</span><button class="qb" onclick="cQ('sn-bs',1,60,'Banana Shake')">+</button></div><button class="ab g" id="ab-sn-bs" onclick="addI('sn-bs',60,'Banana Shake')">+ Add</button></div></div><button class="hbt" id="hb-sn-bs" onclick="toggleH('sn-bs','Banana Shake',60,'https://images.unsplash.com/photo-1553530979-212ac1900247?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-sn="drink"><div class="fi"><img src="https://images.unsplash.com/photo-1571167466136-b57d5ba9eee8?w=220&q=80" alt="Buttermilk" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥛</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg tn">Refreshing</div><div class="fn">Buttermilk</div><div class="fd">Chilled spiced buttermilk with ginger & curry leaves</div></div><div class="fbot"><div class="fp">₹25</div><div class="qc" id="qc-sn-bu" style="display:none"><button class="qb" onclick="cQ('sn-bu',-1,25,'Buttermilk')">−</button><span class="qn" id="qn-sn-bu">0</span><button class="qb" onclick="cQ('sn-bu',1,25,'Buttermilk')">+</button></div><button class="ab" id="ab-sn-bu" onclick="addI('sn-bu',25,'Buttermilk')">+ Add</button></div></div><button class="hbt" id="hb-sn-bu" onclick="toggleH('sn-bu','Buttermilk',25,'https://images.unsplash.com/photo-1571167466136-b57d5ba9eee8?w=100&q=75')">🤍</button></div>
+  </div>
+  <div class="cbar" id="cbar-sn"><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:var(--or);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white" id="cbc-sn">0</div><div style="font-size:12px;color:rgba(255,255,255,.7)"><div id="cbt-sn">items</div><strong id="cbp-sn" style="color:white;font-size:13px">₹0</strong></div></div><button onclick="gotoCart()" style="background:var(--or);border:none;border-radius:10px;padding:8px 14px;font-family:system-ui,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer">View Cart →</button></div>
+  <div class="bnav"><button class="nb" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl">Home</span></button><button class="nb on"><span class="ni">🌆</span><span class="nl">Snacks</span><div class="ndot"></div></button><button class="nb" onclick="gotoCart()"><span class="ni">🛒</span><span class="nl">Cart</span></button><button class="nb" onclick="nav('s-profile')"><span class="ni">👤</span><span class="nl">Profile</span></button></div>
+</div>
+
+<!-- DINNER -->
+<div class="scr" id="s-din">
+  <div class="starbg" style="top:18px;left:38px;animation-delay:0s"></div><div class="starbg" style="top:32px;left:118px;animation-delay:.3s"></div><div class="starbg" style="top:14px;left:198px;animation-delay:.6s"></div><div class="starbg" style="top:42px;left:278px;animation-delay:.9s"></div>
+  <div class="mhdr"><div class="hrow"><div class="hl" style="color:var(--or)">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:11px;color:rgba(255,255,255,.7);letter-spacing:2px"> MEALS</span></div><div class="tp2" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)"><div class="tdot" style="background:#7986CB"></div><span style="color:rgba(255,255,255,.8)">🌙 Dinner</span></div></div><div class="mh">Dinner Menu</div><div class="mm"><span>10 items</span> • 6PM–10PM • 🥗 Healthy</div></div>
+  <div class="ctabs"><div class="ctb on" onclick="fCat(this,'sd-scroll','data-cat','all')">🍽️ All</div><div class="ctb" onclick="fCat(this,'sd-scroll','data-cat','sp')">🥘 Special</div><div class="ctb" onclick="fCat(this,'sd-scroll','data-cat','ad')">🌅 All Day</div></div>
+  <div class="sb" style="padding:12px 13px 80px" id="sd-scroll">
+    <div class="hbanner"><div><div style="font-size:9px;font-weight:700;color:#A5D6A7;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">🌙 Tonight</div><div style="font-size:13px;font-weight:700;color:white">Eat Light, Sleep Tight!</div><div style="font-size:10px;color:#A5D6A7;margin-top:1px">Healthy • Fresh • Daily</div></div><div style="font-size:32px">🌿</div></div>
+    <div class="slbl">🥘 Dinner Specials</div>
+    <div class="fc" data-cat="sp"><div class="fi"><img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=220&q=80" alt="Chapati" onerror="this.parentElement.innerHTML='<div class=fi-ph>🫓</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg th">Light Meal</div><div class="fn">Chapati (2pcs) + Masala</div><div class="fd">Soft wheat rotis with masala gravy</div></div><div class="fbot"><div class="fp">₹60</div><div class="qc" id="qc-d-ch" style="display:none"><button class="qb" onclick="cQ('d-ch',-1,60,'Chapati + Masala')">−</button><span class="qn" id="qn-d-ch">0</span><button class="qb" onclick="cQ('d-ch',1,60,'Chapati + Masala')">+</button></div><button class="ab" id="ab-d-ch" onclick="addI('d-ch',60,'Chapati + Masala')">+ Add</button></div></div><button class="hbt" id="hb-d-ch" onclick="toggleH('d-ch','Chapati + Masala',60,'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="sp"><div class="fi"><img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=220&q=80" alt="Paneer Butter" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥘</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg ts">Chef's Pick</div><div class="fn">Paneer Butter Masala + Roti</div><div class="fd">Creamy tomato gravy with soft paneer & 2 rotis</div></div><div class="fbot"><div class="fp">₹120</div><div class="qc" id="qc-d-pbm" style="display:none"><button class="qb" onclick="cQ('d-pbm',-1,120,'Paneer Butter Masala')">−</button><span class="qn" id="qn-d-pbm">0</span><button class="qb" onclick="cQ('d-pbm',1,120,'Paneer Butter Masala')">+</button></div><button class="ab" id="ab-d-pbm" onclick="addI('d-pbm',120,'Paneer Butter Masala + Roti')">+ Add</button></div></div><button class="hbt" id="hb-d-pbm" onclick="toggleH('d-pbm','Paneer Butter Masala',120,'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="sp"><div class="fi"><img src="https://images.unsplash.com/photo-1567337710282-00832b415979?w=220&q=80" alt="Mix Veg" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥗</div>'"/><div class="vw"><div class="vd"></div></div></div><div class="fb"><div><div class="ftg th">Healthy</div><div class="fn">Mix Veg Curry + Chapati</div><div class="fd">Seasonal veggies in light masala with 2 chapatis</div></div><div class="fbot"><div class="fp">₹70</div><div class="qc" id="qc-d-mv" style="display:none"><button class="qb" onclick="cQ('d-mv',-1,70,'Mix Veg Curry')">−</button><span class="qn" id="qn-d-mv">0</span><button class="qb" onclick="cQ('d-mv',1,70,'Mix Veg Curry')">+</button></div><button class="ab" id="ab-d-mv" onclick="addI('d-mv',70,'Mix Veg Curry + Chapati')">+ Add</button></div></div><button class="hbt" id="hb-d-mv" onclick="toggleH('d-mv','Mix Veg Curry',70,'https://images.unsplash.com/photo-1567337710282-00832b415979?w=100&q=75')">🤍</button></div>
+    <div class="slbl" style="margin-top:5px">🌅 Also Available at Night</div>
+    <div class="fc" data-cat="ad"><div class="fi"><img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=220&q=80" alt="Idly" onerror="this.parentElement.innerHTML='<div class=fi-ph>🫓</div>'"/><div class="ctg" style="background:rgba(255,193,7,.9);color:#3E2010">All Day</div></div><div class="fb"><div><div class="ftg tn">All Day</div><div class="fn">Idly (2 pcs)</div><div class="fd">Soft steamed rice cakes with chutney</div></div><div class="fbot"><div class="fp">₹26</div><div class="qc" id="qc-d-id" style="display:none"><button class="qb" onclick="cQ('d-id',-1,26,'Idly')">−</button><span class="qn" id="qn-d-id">0</span><button class="qb" onclick="cQ('d-id',1,26,'Idly')">+</button></div><button class="ab" id="ab-d-id" onclick="addI('d-id',26,'Idly')">+ Add</button></div></div><button class="hbt" id="hb-d-id" onclick="toggleH('d-id','Idly',26,'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="ad"><div class="fi"><img src="https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=220&q=80" alt="Dosa" onerror="this.parentElement.innerHTML='<div class=fi-ph>🥞</div>'"/><div class="ctg" style="background:rgba(255,193,7,.9);color:#3E2010">All Day</div></div><div class="fb"><div><div class="ftg tp">Popular</div><div class="fn">Plain Dosa</div><div class="fd">Crispy thin crepe with sambar</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-d-do" style="display:none"><button class="qb" onclick="cQ('d-do',-1,40,'Plain Dosa')">−</button><span class="qn" id="qn-d-do">0</span><button class="qb" onclick="cQ('d-do',1,40,'Plain Dosa')">+</button></div><button class="ab" id="ab-d-do" onclick="addI('d-do',40,'Plain Dosa')">+ Add</button></div></div><button class="hbt" id="hb-d-do" onclick="toggleH('d-do','Plain Dosa',40,'https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="ad"><div class="fi"><img src="https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=220&q=80" alt="Poori" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍞</div>'"/><div class="ctg" style="background:rgba(255,193,7,.9);color:#3E2010">All Day</div></div><div class="fb"><div><div class="ftg tb">Best Seller</div><div class="fn">Poori (2 pcs)</div><div class="fd">Fluffy deep-fried bread with masala</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-d-po" style="display:none"><button class="qb" onclick="cQ('d-po',-1,40,'Poori')">−</button><span class="qn" id="qn-d-po">0</span><button class="qb" onclick="cQ('d-po',1,40,'Poori')">+</button></div><button class="ab" id="ab-d-po" onclick="addI('d-po',40,'Poori')">+ Add</button></div></div><button class="hbt" id="hb-d-po" onclick="toggleH('d-po','Poori',40,'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=100&q=75')">🤍</button></div>
+    <div class="fc" data-cat="ad"><div class="fi"><img src="https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=220&q=80" alt="Fruit Salad" onerror="this.parentElement.innerHTML='<div class=fi-ph>🍓</div>'"/><div class="ctg" style="background:rgba(255,193,7,.9);color:#3E2010">All Day</div></div><div class="fb"><div><div class="ftg th">Healthy</div><div class="fn">Fruit Salad</div><div class="fd">Fresh seasonal fruits with honey</div></div><div class="fbot"><div class="fp">₹40</div><div class="qc" id="qc-d-fs" style="display:none"><button class="qb" onclick="cQ('d-fs',-1,40,'Fruit Salad')">−</button><span class="qn" id="qn-d-fs">0</span><button class="qb" onclick="cQ('d-fs',1,40,'Fruit Salad')">+</button></div><button class="ab" id="ab-d-fs" onclick="addI('d-fs',40,'Fruit Salad')">+ Add</button></div></div><button class="hbt" id="hb-d-fs" onclick="toggleH('d-fs','Fruit Salad',40,'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=100&q=75')">🤍</button></div>
+  </div>
+  <div class="cbar" id="cbar-d" style="background:linear-gradient(135deg,var(--or),#FF6B35)"><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:white;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--or)" id="cbc-d">0</div><div style="font-size:12px;color:rgba(255,255,255,.7)"><div id="cbt-d">items</div><strong id="cbp-d" style="color:white;font-size:13px">₹0</strong></div></div><button onclick="gotoCart()" style="background:white;border:none;border-radius:10px;padding:8px 14px;font-family:system-ui,sans-serif;font-size:12px;font-weight:700;color:var(--or);cursor:pointer">View Cart →</button></div>
+  <div class="bnav" style="background:var(--nv2);border-color:rgba(255,255,255,.06)"><button class="nb" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl" style="color:rgba(255,255,255,.5)">Home</span></button><button class="nb on"><span class="ni">🌙</span><span class="nl">Dinner</span><div class="ndot"></div></button><button class="nb" onclick="gotoCart()"><span class="ni">🛒</span><span class="nl" style="color:rgba(255,255,255,.5)">Cart</span></button><button class="nb" onclick="nav('s-profile')"><span class="ni">👤</span><span class="nl" style="color:rgba(255,255,255,.5)">Profile</span></button></div>
+</div>
+
+<!-- CART PAGE -->
+<div class="scr" id="s-cart" style="background:var(--cr)">
+  <div class="phdr"><div class="ph-row"><button class="bbtn" onclick="nav('s-home')">←</button><div><div class="ptitle">My Cart 🛒</div><div style="font-size:11px;color:#B08060" id="cart-sub">0 items</div></div><div style="font-family:cursive;font-size:16px;color:var(--or);margin-left:auto">Tasty</div></div></div>
+  <div class="sb" style="padding:13px 13px 20px" id="cart-list"></div>
+  <div class="pbar"><button class="btn" id="cart-pay-btn" onclick="nav('s-pay')">Proceed to Pay <span id="pay-btn-amt" style="background:rgba(0,0,0,.15);padding:4px 10px;border-radius:8px;font-size:13px">₹0</span></button></div>
+</div>
+
+<!-- PAYMENT PAGE -->
+<div class="scr" id="s-pay" style="background:var(--cr)">
+  <div class="payhdr">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><button class="bbtn" style="background:rgba(255,255,255,.12);color:white" onclick="nav('s-cart')">←</button><div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:white">Payment</div></div>
+    <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Total Amount</div><div style="font-size:24px;font-weight:800;color:white" id="pay-amt">₹0</div><div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">TastyMeals Cloud Kitchen</div></div><div style="background:rgba(255,255,255,.1);border-radius:9px;padding:8px 10px;text-align:center"><span style="font-size:19px;display:block">🔒</span><span style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600">100%<br>SECURE</span></div></div>
+  </div>
+  <div style="display:flex;background:var(--wh);border-bottom:1px solid var(--cr2);flex-shrink:0">
+    <div id="pt-upi" style="flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:600;color:var(--or);cursor:pointer;border-bottom:3px solid var(--or)" onclick="switchPT('upi')">📱 UPI</div>
+    <div id="pt-cod" style="flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:600;color:#B08060;cursor:pointer;border-bottom:3px solid transparent" onclick="switchPT('cod')">💵 Cash on Delivery</div>
+  </div>
+  <div class="sb" id="pay-upi-tab" style="padding:13px">
+    <div style="font-size:11px;font-weight:700;color:var(--br);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Pay with UPI App</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px">
+      <div class="uapp on" id="ua-gpay" onclick="selU('gpay')"><span style="font-size:24px;display:block;margin-bottom:3px">🟦</span><span style="font-size:10px;font-weight:600;color:var(--br)">GPay</span></div>
+      <div class="uapp" id="ua-ppe" onclick="selU('ppe')"><span style="font-size:24px;display:block;margin-bottom:3px">💜</span><span style="font-size:10px;font-weight:600;color:var(--br)">PhonePe</span></div>
+      <div class="uapp" id="ua-ptm" onclick="selU('ptm')"><span style="font-size:24px;display:block;margin-bottom:3px">🔵</span><span style="font-size:10px;font-weight:600;color:var(--br)">Paytm</span></div>
+      <div class="uapp" id="ua-bhim" onclick="selU('bhim')"><span style="font-size:24px;display:block;margin-bottom:3px">🇮🇳</span><span style="font-size:10px;font-weight:600;color:var(--br)">BHIM</span></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--br);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Or Enter UPI ID</div>
+    <div style="background:var(--wh);border-radius:13px;padding:13px;border:1px solid var(--cr2);margin-bottom:13px">
+      <div style="font-size:12px;font-weight:600;color:var(--br2);margin-bottom:8px">📱 Your UPI ID</div>
+      <div style="display:flex;align-items:center;background:var(--cr);border:2px solid var(--cr2);border-radius:11px;padding:10px 12px;gap:7px">
+        <input id="upi-id" placeholder="mobilenumber / yourname" oninput="resetV()" style="flex:1;border:none;background:transparent;font-family:system-ui,sans-serif;font-size:13px;color:var(--br2);outline:none;min-width:0"/>
+        <span style="font-size:13px;font-weight:700;color:var(--or)">@upi</span>
+        <button onclick="verifyU()" style="background:var(--or);border:none;border-radius:7px;padding:6px 10px;font-family:system-ui,sans-serif;font-size:11px;font-weight:600;color:white;cursor:pointer">Verify</button>
+      </div>
+      <div id="upi-ok" style="display:none;align-items:center;gap:6px;background:#E8F5E9;border-radius:8px;padding:8px 10px;margin-top:8px"><span>✅</span><span id="upi-ok-txt" style="font-size:11px;color:var(--gn);font-weight:600">Verified!</span></div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--br2),#8B4513);border-radius:16px;padding:16px;text-align:center">
+      <div style="font-size:20px;margin-bottom:8px">🍛 🔥 🍽️</div>
+      <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:white;line-height:1.4;margin-bottom:7px">One Click Away from<br><em style="color:var(--yw)">Delicious Food!</em></div>
+      <div style="display:flex;align-items:center;gap:7px;margin:7px 0"><div style="flex:1;height:1px;background:rgba(255,255,255,.15)"></div><div style="width:4px;height:4px;background:var(--or);border-radius:50%"></div><div style="flex:1;height:1px;background:rgba(255,255,255,.15)"></div></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.6">"Fresh cooked. Cloud delivered. Made with love." 🧡</div>
+    </div>
+  </div>
+  <div class="sb" id="pay-cod-tab" style="padding:13px;display:none">
+    <div style="background:var(--wh);border-radius:14px;padding:18px;border:1px solid var(--cr2);text-align:center;margin-bottom:13px">
+      <span style="font-size:48px;display:block;margin-bottom:11px">💵</span>
+      <div style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:var(--br2);margin-bottom:5px">Cash on Delivery</div>
+      <div style="font-size:12px;color:#B08060;line-height:1.7;margin-bottom:13px">Pay when your food arrives at your door!</div>
+      <div style="text-align:left;display:flex;flex-direction:column;gap:9px">
+        <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--br)"><div style="width:26px;height:26px;background:#FFF0EA;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✅</div>No advance payment</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--br)"><div style="width:26px;height:26px;background:#FFF0EA;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🚚</div>Pay when delivered</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--br)"><div style="width:26px;height:26px;background:#FFF0EA;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">💰</div>Keep exact change ready</div>
+      </div>
+    </div>
+  </div>
+  <div class="pbar"><button class="btn" onclick="placeOrder()">Pay Now <span id="pay-mlbl" style="background:rgba(0,0,0,.15);padding:4px 9px;border-radius:8px;font-size:12px">📱 UPI</span> <span id="pay-famt" style="background:rgba(0,0,0,.15);padding:4px 9px;border-radius:8px;font-size:12px">₹0</span></button></div>
+</div>
+
+<!-- THANK YOU -->
+<div class="scr" id="s-ty" style="background:var(--cr)">
+  <div style="position:absolute;inset:0;overflow:hidden;filter:blur(3px);opacity:.7">
+    <div style="background:var(--wh);padding:50px 14px 12px;border-bottom:1px solid var(--cr2)"><div class="hl">Tasty<span style="font-family:system-ui,sans-serif;font-weight:800;font-size:11px;color:var(--br);letter-spacing:2px"> MEALS</span></div></div>
+    <div style="padding:13px"><div style="background:var(--wh);border-radius:14px;height:76px;margin-bottom:10px;border:1px solid var(--cr2);display:flex;align-items:center;gap:11px;padding:11px"><img style="width:54px;height:54px;border-radius:10px;object-fit:cover;flex-shrink:0" src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=100&q=75" alt=""/><div style="flex:1"><div style="width:110px;height:11px;background:var(--cr2);border-radius:5px;margin-bottom:7px"></div><div style="width:150px;height:9px;background:var(--cr2);border-radius:5px;opacity:.6"></div></div></div></div>
+  </div>
+  <div class="tyovl">
+    <div class="typop">
+      <div style="background:linear-gradient(135deg,var(--br2),#8B4513);padding:24px 20px 16px;text-align:center;position:relative;overflow:hidden">
+        <div class="conf" style="background:var(--yw);top:17px;left:26px;--cx:-20px;--cy:-26px;animation-delay:.4s"></div>
+        <div class="conf" style="background:var(--tl);top:17px;right:26px;--cx:20px;--cy:-26px;animation-delay:.5s"></div>
+        <div class="conf" style="background:#FF8FA3;top:36px;left:52px;--cx:-26px;--cy:-16px;animation-delay:.6s"></div>
+        <div class="conf" style="background:#A8E6CF;top:36px;right:52px;--cx:26px;--cy:-16px;animation-delay:.7s"></div>
+        <div style="position:relative;display:inline-block;margin-bottom:11px;z-index:3">
+          <div style="position:absolute;inset:-5px;border-radius:50%;border:2px dashed rgba(255,255,255,.3);animation:spin 8s linear infinite"></div>
+          <div style="width:70px;height:70px;background:linear-gradient(135deg,var(--or),#FF8FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto;box-shadow:0 8px 24px rgba(232,98,42,.4)">🍽️</div>
+        </div>
+        <div style="font-family:cursive;font-size:19px;color:white;margin-bottom:2px;position:relative;z-index:3">Thank You!</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase;position:relative;z-index:3">TastyMeals Cloud Kitchen</div>
+      </div>
+      <div style="padding:16px 20px 20px;text-align:center">
+        <div style="display:inline-flex;align-items:center;gap:5px;background:#FFF0EA;border:1.5px solid #FFD0B5;border-radius:20px;padding:5px 11px;margin-bottom:11px;animation:sUp .5s ease .7s both;opacity:0"><span style="background:var(--or);color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:9px" id="ty-cn">🌟 #1042</span><span style="font-size:11px;font-weight:600;color:var(--br)">Valued Customer</span></div>
+        <div style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:var(--br2);margin-bottom:6px;animation:sUp .5s ease .8s both;opacity:0">Wow, <em style="color:var(--or)">Karthick!</em> 🎉</div>
+        <div style="font-size:11px;color:#B08060;line-height:1.7;margin-bottom:14px;animation:sUp .5s ease .9s both;opacity:0">Your order confirmed! Chef is preparing your <strong style="color:var(--or)">fresh meal</strong> 🧡<br>You're our <strong id="ty-on">1042nd</strong> happy customer!</div>
+        <div style="background:var(--cr);border-radius:11px;padding:10px 12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;animation:sUp .5s ease 1s both;opacity:0"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:17px">🧾</span><div><div style="font-size:11px;font-weight:700;color:var(--br2)">#TM20240318</div><div style="font-size:10px;color:#B08060">Est. 30 mins</div></div></div><div style="background:#E8F5E9;color:var(--gn);font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px">✓ Confirmed</div></div>
+        <div style="display:flex;flex-direction:column;gap:8px;animation:sUp .5s ease 1.1s both;opacity:0">
+          <button class="btn" onclick="nav('s-track')">🛵 Track My Order</button>
+          <button style="width:100%;padding:12px;background:transparent;border:1.5px solid var(--cr2);border-radius:13px;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--br);cursor:pointer" onclick="nav('s-home')">Continue Ordering 🍽️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRACKING -->
+<div class="scr" id="s-track" style="background:var(--cr)">
+  <div id="tp-view" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center">
+    <div style="width:86px;height:86px;background:linear-gradient(135deg,var(--or),#FF8FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;margin:0 auto 16px;box-shadow:0 12px 32px rgba(232,98,42,.3);animation:popin .7s cubic-bezier(.34,1.56,.64,1)">✅</div>
+    <div style="font-family:Georgia,serif;font-size:21px;font-weight:700;color:var(--br2);margin-bottom:6px">Order Placed! 🎉</div>
+    <div style="font-size:12px;color:#B08060;line-height:1.7;margin-bottom:20px">Chef is preparing it fresh 👨‍🍳<br>Estimated: <strong style="color:var(--or)">30 minutes</strong></div>
+    <div style="background:var(--wh);border-radius:14px;padding:13px;width:100%;margin-bottom:20px;border:1px solid var(--cr2)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:#B08060">Order ID</span><span style="font-size:12px;font-weight:700;color:var(--br2)">#TM20240318</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:#B08060">Total</span><span style="font-size:12px;font-weight:700;color:var(--or)" id="track-total">₹0</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:#B08060">Payment</span><span style="background:#E8F5E9;color:var(--gn);font-size:10px;font-weight:700;padding:3px 8px;border-radius:7px" id="track-pay">✅ GPay</span></div>
+    </div>
+    <button class="btn" onclick="showMap()">🛵 Track My Order Live</button>
+  </div>
+  <div id="tm-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+    <div class="maparea">
+      <div style="position:absolute;inset:0;background:#EAF2EA"></div>
+      <div style="position:absolute;left:0;right:0;top:52px;height:8px;background:#D0E8D0"></div>
+      <div style="position:absolute;left:0;right:0;top:140px;height:11px;background:#C5DCC5"></div>
+      <div style="position:absolute;left:0;right:0;top:228px;height:8px;background:#D0E8D0"></div>
+      <div style="position:absolute;top:0;bottom:0;left:72px;width:8px;background:#D0E8D0"></div>
+      <div style="position:absolute;top:0;bottom:0;left:172px;width:11px;background:#C5DCC5"></div>
+      <div style="position:absolute;top:0;bottom:0;left:282px;width:8px;background:#D0E8D0"></div>
+      <div style="position:absolute;top:60px;left:80px;width:84px;height:72px;border-radius:8px;background:#BDD5B5;opacity:.65"></div>
+      <div style="position:absolute;top:60px;left:183px;width:91px;height:72px;border-radius:8px;background:#A8C89E;opacity:.5"></div>
+      <div style="position:absolute;top:60px;left:290px;width:58px;height:72px;border-radius:12px;background:#90C080;opacity:.5"></div>
+      <div style="position:absolute;top:151px;left:80px;width:84px;height:69px;border-radius:8px;background:#BDD5B5;opacity:.65"></div>
+      <div style="position:absolute;top:151px;left:183px;width:91px;height:69px;border-radius:8px;background:#A8C89E;opacity:.5"></div>
+      <svg class="rsvg" viewBox="0 0 390 310" preserveAspectRatio="none">
+        <path d="M76 288 L76 60 L172 60 L172 56 L334 56" stroke="#FF6B35" stroke-width="7" fill="none" stroke-linecap="round" opacity=".2"/>
+        <path d="M76 288 L76 60 L172 60 L172 56 L334 56" stroke="#E8622A" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".9" stroke-dasharray="9 4"/>
+      </svg>
+      <div class="kitmk" style="bottom:11px;left:50px"><span style="font-size:14px">🍳</span><span class="mkl">Kitchen</span></div>
+      <div class="hmk" style="top:36px;left:306px"><span style="font-size:14px">🏠</span><span class="mkl">Your Home</span></div>
+      <div class="rmk" style="top:115px;left:54px"><div style="position:relative"><div class="rpuls"></div><div class="rbub">🛵</div></div></div>
+      <div class="etabox"><div style="font-size:24px;font-weight:800;color:white;line-height:1" id="eta-n">18</div><div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:600">MINS</div><div style="height:1px;background:rgba(255,255,255,.1);margin:5px 0"></div><div style="font-size:11px;font-weight:700;color:#FF8FA3">2.4 km</div></div>
+      <div class="flhdr"><div style="display:flex;align-items:center;gap:9px"><button onclick="nav('s-ty')" style="width:34px;height:34px;background:white;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--br2);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);flex-shrink:0">←</button><div><div style="font-family:Georgia,serif;font-size:17px;font-weight:700;color:var(--br2)">Live Tracking</div><div style="font-size:10px;color:#B08060">#TM20240318</div></div><div style="display:flex;align-items:center;gap:4px;background:#FFEBEE;border-radius:18px;padding:4px 10px;margin-left:auto"><div style="width:7px;height:7px;background:#E53935;border-radius:50%;animation:blink 1s ease-in-out infinite"></div><span style="font-size:10px;font-weight:800;color:#E53935;letter-spacing:1px">LIVE</span></div></div></div>
+    </div>
+    <div class="bsh">
+      <div style="width:36px;height:4px;background:var(--cr2);border-radius:2px;margin:0 auto 11px"></div>
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:11px;border-bottom:1px solid var(--cr2);margin-bottom:11px">
+        <div style="width:46px;height:46px;background:linear-gradient(135deg,var(--or),#FF8FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;border:2px solid white;box-shadow:0 3px 10px rgba(232,98,42,.3)">🧑‍🦱</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--br2)">Murugan K.</div><div style="font-size:10px;color:#B08060">TVS Apache • TN 22 AB 1234</div><div style="font-size:10px;color:#B08060;margin-top:2px">⭐⭐⭐⭐⭐ 4.9</div></div>
+        <div style="display:flex;gap:7px"><button onclick="alert('Calling 📞')" style="width:36px;height:36px;border-radius:50%;border:none;background:#E8F5E9;font-size:16px;cursor:pointer">📞</button><button onclick="alert('Chat 💬')" style="width:36px;height:36px;border-radius:50%;border:none;background:#E3F2FD;font-size:16px;cursor:pointer">💬</button></div>
+      </div>
+      <div class="srow"><div class="sfill"></div><div class="step"><div class="sdot dn">✓</div><div class="slb dn">Confirmed</div></div><div class="step"><div class="sdot dn">✓</div><div class="slb dn">Prepared</div></div><div class="step"><div class="sdot nw">🛵</div><div class="slb nw">On the Way</div></div><div class="step"><div class="sdot">🏠</div><div class="slb">Delivered</div></div></div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--cr);border-radius:10px;padding:9px 11px"><span style="font-size:17px">📍</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--br2)">12, Anna Nagar, Chennai - 600040</div><div style="font-size:10px;color:#B08060">Home • Delivering now</div></div><div style="font-size:12px;font-weight:700;color:var(--or)">2.4 km</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="scr" id="s-profile" style="background:var(--cr)">
+  <div style="background:linear-gradient(145deg,var(--br2),var(--br));padding:max(44px,env(safe-area-inset-top)) 18px 26px;flex-shrink:0;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+    <div style="position:relative;display:inline-block;margin-bottom:11px;z-index:2"><div style="width:82px;height:82px;background:linear-gradient(135deg,var(--or),#FF8FA3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid rgba(255,255,255,.2);box-shadow:0 8px 24px rgba(0,0,0,.3)">👨‍🍳</div><div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid white">✏️</div></div>
+    <div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:white;margin-bottom:2px;position:relative;z-index:2">Karthick S.</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.6);position:relative;z-index:2">+91 98765 43210</div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:10px;z-index:2;position:relative;flex-wrap:wrap"><div style="background:rgba(255,217,61,.2);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:var(--yw)">⭐ Gold Member</div><div style="background:rgba(255,255,255,.1);border-radius:18px;padding:4px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.8)">🍛 Food Lover</div></div>
+  </div>
+  <div style="display:flex;background:var(--wh);border-bottom:1px solid var(--cr2);flex-shrink:0">
+    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)">24</div><div style="font-size:10px;color:#B08060;margin-top:1px">Orders</div></div>
+    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)">₹1.8k</div><div style="font-size:10px;color:#B08060;margin-top:1px">Spent</div></div>
+    <div style="flex:1;padding:11px 7px;text-align:center;border-right:1px solid var(--cr2)"><div style="font-size:17px;font-weight:800;color:var(--or)">4.8★</div><div style="font-size:10px;color:#B08060;margin-top:1px">Rating</div></div>
+    <div style="flex:1;padding:11px 7px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--or)" id="liked-count">0❤️</div><div style="font-size:10px;color:#B08060;margin-top:1px">Liked</div></div>
+  </div>
+  <div class="sb" style="padding:13px 13px 20px">
+    <!-- LIKED FOODS SECTION -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--br);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px">❤️ Liked Foods</div>
+      <div id="liked-list">
+        <div style="text-align:center;padding:24px 20px;color:#B08060;background:var(--wh);border-radius:13px;border:1px solid var(--cr2)"><div style="font-size:32px;margin-bottom:7px">🤍</div><div style="font-size:13px;font-weight:600;color:var(--br2);margin-bottom:3px">No liked foods yet!</div><div style="font-size:11px">Tap ❤️ on any food to save it here</div></div>
+      </div>
+    </div>
+    <!-- ACCOUNT SECTION -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--br);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px">Account</div>
+      <div class="pitem" onclick="nav('s-history')"><div class="piic" style="background:#FFF0EA">📦</div><div><div style="font-size:13px;font-weight:600;color:var(--br2)">Order History</div><div style="font-size:10px;color:#B08060;margin-top:1px">View past orders</div></div><div style="font-size:13px;color:#C4A882;margin-left:auto">→</div></div>
+      <div class="pitem" onclick="nav('s-track')"><div class="piic" style="background:#E8F5E9">🛵</div><div><div style="font-size:13px;font-weight:600;color:var(--br2)">Live Tracking</div><div style="font-size:10px;color:#B08060;margin-top:1px">Track current order</div></div><div style="background:#FFEBEE;color:#E53935;font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;margin-left:auto">LIVE</div><div style="font-size:13px;color:#C4A882">→</div></div>
+      <div class="pitem"><div class="piic" style="background:#E3F2FD">📍</div><div><div style="font-size:13px;font-weight:600;color:var(--br2)">Saved Addresses</div></div><div style="font-size:13px;color:#C4A882;margin-left:auto">→</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--br);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px">Preferences</div>
+      <div class="pitem"><div class="piic" style="background:#F3E5F5">🔔</div><div><div style="font-size:13px;font-weight:600;color:var(--br2)">Notifications</div></div><div style="font-size:13px;color:#C4A882;margin-left:auto">→</div></div>
+      <div class="pitem"><div class="piic" style="background:#FFF8E1">🎁</div><div><div style="font-size:13px;font-weight:600;color:var(--br2)">Offers & Coupons</div><div style="font-size:10px;color:#B08060;margin-top:1px">TASTY10, FIRST20, SAVE15, WELCOME50</div></div><div style="background:var(--or);color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;margin-left:auto">4</div><div style="font-size:13px;color:#C4A882">→</div></div>
+    </div>
+    <button onclick="nav('s-otp')" style="width:100%;padding:12px;background:#FFF0EA;border:1.5px solid #FFD0B5;border-radius:12px;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--or);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px">🚪 Logout</button>
+  </div>
+  <div class="bnav"><button class="nb" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl">Home</span></button><button class="nb" onclick="gotoMenu()"><span class="ni">🍽️</span><span class="nl">Menu</span></button><button class="nb" onclick="nav('s-history')"><span class="ni">📦</span><span class="nl">Orders</span></button><button class="nb on"><span class="ni">👤</span><span class="nl">Profile</span><div class="ndot"></div></button></div>
+</div>
+
+<!-- ORDER HISTORY -->
+<div class="scr" id="s-history" style="background:var(--cr)">
+  <div class="phdr"><div class="ph-row" style="margin-bottom:12px"><button class="bbtn" onclick="nav('s-profile')">←</button><div><div class="ptitle">Order History</div><div style="font-size:11px;color:#B08060">24 total orders</div></div></div>
+    <div style="display:flex;gap:8px"><div style="flex:1;background:var(--cr);border-radius:10px;padding:9px 6px;text-align:center;border:1px solid var(--cr2)"><div style="font-size:15px;font-weight:800;color:var(--or)">21</div><div style="font-size:9px;color:#B08060;margin-top:1px">Delivered</div></div><div style="flex:1;background:var(--cr);border-radius:10px;padding:9px 6px;text-align:center;border:1px solid var(--cr2)"><div style="font-size:15px;font-weight:800;color:var(--or)">1</div><div style="font-size:9px;color:#B08060;margin-top:1px">Active</div></div><div style="flex:1;background:var(--cr);border-radius:10px;padding:9px 6px;text-align:center;border:1px solid var(--cr2)"><div style="font-size:15px;font-weight:800;color:var(--or)">2</div><div style="font-size:9px;color:#B08060;margin-top:1px">Cancelled</div></div><div style="flex:1;background:var(--cr);border-radius:10px;padding:9px 6px;text-align:center;border:1px solid var(--cr2)"><div style="font-size:15px;font-weight:800;color:var(--or)">₹1.8k</div><div style="font-size:9px;color:#B08060;margin-top:1px">Spent</div></div></div>
+  </div>
+  <div class="sb" style="padding:13px">
+    <div style="background:var(--wh);border-radius:16px;padding:13px;margin-bottom:11px;border:1px solid var(--cr2)"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div><div style="font-size:12px;font-weight:700;color:var(--br2)">#TM20240318</div><div style="font-size:10px;color:#B08060;margin-top:2px">🕐 Today • 9:30 AM</div></div><div style="background:#FFF0EA;color:var(--or);font-size:10px;font-weight:700;padding:4px 9px;border-radius:9px;animation:blink 1.5s ease-in-out infinite">🔴 Preparing</div></div><div style="display:flex;gap:6px;margin-bottom:10px;align-items:center"><img style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1.5px solid var(--cr2);flex-shrink:0" src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=100&q=75" alt="" onerror="this.style.display='none'"/><img style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1.5px solid var(--cr2);flex-shrink:0" src="https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=100&q=75" alt="" onerror="this.style.display='none'"/><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--br2)">Idly, Plain Dosa</div><div style="font-size:10px;color:#B08060">3 items • Breakfast</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--cr2)"><div><div style="font-size:10px;color:#B08060">Total Paid</div><div style="font-size:14px;font-weight:800;color:var(--or)">₹131</div></div><button onclick="nav('s-track')" style="background:#E8F5E9;border:none;border-radius:8px;padding:7px 13px;font-family:system-ui,sans-serif;font-size:11px;font-weight:600;color:var(--gn);cursor:pointer">🛵 Track</button></div></div>
+    <div style="background:var(--wh);border-radius:16px;padding:13px;margin-bottom:11px;border:1px solid var(--cr2)"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div><div style="font-size:12px;font-weight:700;color:var(--br2)">#TM20240317</div><div style="font-size:10px;color:#B08060;margin-top:2px">📅 Yesterday • 12:45 PM</div></div><div style="background:#E8F5E9;color:var(--gn);font-size:10px;font-weight:700;padding:4px 9px;border-radius:9px">✅ Delivered</div></div><div style="display:flex;gap:6px;margin-bottom:10px;align-items:center"><img style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1.5px solid var(--cr2);flex-shrink:0" src="https://images.unsplash.com/photo-1567337710282-00832b415979?w=100&q=75" alt="" onerror="this.style.display='none'"/><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--br2)">Veg Meals, Veg Briyani</div><div style="font-size:10px;color:#B08060">3 items • Lunch</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--cr2)"><div><div style="font-size:10px;color:#B08060">Total Paid</div><div style="font-size:14px;font-weight:800;color:var(--or)">₹220</div></div><button style="background:var(--or);border:none;border-radius:8px;padding:7px 13px;font-family:system-ui,sans-serif;font-size:11px;font-weight:600;color:white;cursor:pointer">🔄 Reorder</button></div></div>
+  </div>
+  <div class="bnav"><button class="nb" onclick="nav('s-home')"><span class="ni">🏠</span><span class="nl">Home</span></button><button class="nb" onclick="gotoMenu()"><span class="ni">🍽️</span><span class="nl">Menu</span></button><button class="nb on"><span class="ni">📦</span><span class="nl">Orders</span><div class="ndot"></div></button><button class="nb" onclick="nav('s-profile')"><span class="ni">👤</span><span class="nl">Profile</span></button></div>
+</div>
+
+</div><!-- end .app -->
+
+<script>
+// ===== STATE =====
+const FOODS=[
+  {id:'b-idly',n:'Idly (2 pcs)',p:26,c:'Breakfast',img:'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=100&q=75',s:'s-breakfast'},
+  {id:'b-dosa',n:'Plain Dosa',p:40,c:'Breakfast',img:'https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=100&q=75',s:'s-breakfast'},
+  {id:'b-ghee',n:'Ghee Dosa',p:60,c:'Breakfast',img:'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=100&q=75',s:'s-breakfast'},
+  {id:'b-ravi',n:'Ravi Dosa',p:55,c:'Breakfast',img:'https://images.unsplash.com/photo-1645177628172-a5ed0f2cce34?w=100&q=75',s:'s-breakfast'},
+  {id:'b-onion',n:'Onion Dosa',p:55,c:'Breakfast',img:'https://images.unsplash.com/photo-1574653853027-5382a3d23a15?w=100&q=75',s:'s-breakfast'},
+  {id:'b-poori',n:'Poori (2 pcs)',p:40,c:'Breakfast',img:'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=100&q=75',s:'s-breakfast'},
+  {id:'b-fruit',n:'Fruit Salad',p:40,c:'Breakfast',img:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=100&q=75',s:'s-breakfast'},
+  {id:'l-vm',n:'Veg Meals',p:100,c:'Lunch',img:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=100&q=75',s:'s-lunch'},
+  {id:'l-cr',n:'Curd Rice',p:50,c:'Lunch',img:'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=100&q=75',s:'s-lunch'},
+  {id:'l-tr',n:'Tomato Rice',p:50,c:'Lunch',img:'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=100&q=75',s:'s-lunch'},
+  {id:'l-lr',n:'Lemon Rice',p:50,c:'Lunch',img:'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=100&q=75',s:'s-lunch'},
+  {id:'l-tar',n:'Tamarind Rice',p:50,c:'Lunch',img:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=100&q=75',s:'s-lunch'},
+  {id:'l-vb',n:'Veg Briyani',p:70,c:'Lunch',img:'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=100&q=75',s:'s-lunch'},
+  {id:'l-pb',n:'Paneer Briyani',p:80,c:'Lunch',img:'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=100&q=75',s:'s-lunch'},
+  {id:'l-mb',n:'Mushroom Briyani',p:80,c:'Lunch',img:'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=100&q=75',s:'s-lunch'},
+  {id:'sn-eg',n:'Boiled Eggs',p:30,c:'Snacks',img:'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=100&q=75',s:'s-snacks'},
+  {id:'sn-pt',n:'Paneer Tikka',p:80,c:'Snacks',img:'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=100&q=75',s:'s-snacks'},
+  {id:'sn-sp',n:'Sprouts Salad',p:50,c:'Snacks',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&q=75',s:'s-snacks'},
+  {id:'sn-va',n:'Vada (2 pcs)',p:30,c:'Snacks',img:'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=100&q=75',s:'s-snacks'},
+  {id:'sn-ba',n:'Bajji (3 pcs)',p:40,c:'Snacks',img:'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=100&q=75',s:'s-snacks'},
+  {id:'sn-bs',n:'Banana Shake',p:60,c:'Snacks',img:'https://images.unsplash.com/photo-1553530979-212ac1900247?w=100&q=75',s:'s-snacks'},
+  {id:'sn-bu',n:'Buttermilk',p:25,c:'Snacks',img:'https://images.unsplash.com/photo-1571167466136-b57d5ba9eee8?w=100&q=75',s:'s-snacks'},
+  {id:'d-ch',n:'Chapati + Masala',p:60,c:'Dinner',img:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=75',s:'s-din'},
+  {id:'d-pbm',n:'Paneer Butter Masala',p:120,c:'Dinner',img:'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=100&q=75',s:'s-din'},
+  {id:'d-mv',n:'Mix Veg Curry',p:70,c:'Dinner',img:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=100&q=75',s:'s-din'},
+  {id:'d-id',n:'Idly',p:26,c:'Dinner',img:'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=100&q=75',s:'s-din'},
+  {id:'d-do',n:'Plain Dosa',p:40,c:'Dinner',img:'https://images.unsplash.com/photo-1630409346824-4f0e7b080087?w=100&q=75',s:'s-din'},
+  {id:'d-po',n:'Poori',p:40,c:'Dinner',img:'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=100&q=75',s:'s-din'},
+  {id:'d-fs',n:'Fruit Salad',p:40,c:'Dinner',img:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=100&q=75',s:'s-din'}
+];
+const COUPONS={TASTY10:{d:10,t:'flat'},FIRST20:{d:20,t:'flat'},SAVE15:{d:15,t:'pct'},WELCOME50:{d:50,t:'flat'}};
+let cart={},liked={},coupon=null,curUPI='gpay',curPT='upi',etaT=null;
+
+// GREETING
+const hr=new Date().getHours();
+let gt='Good Morning! 🌅',tl='🌅 Breakfast Time';
+if(hr>=12&&hr<17){gt='Good Afternoon! ☀️';tl='☀️ Lunch Time';}
+else if(hr>=17&&hr<21){gt='Good Evening! 🌆';tl='🌆 Snacks Time';}
+else if(hr>=21){gt='Good Night! 🌙';tl='🌙 Dinner Time';}
+['greet-t','hgreet'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=gt;});
+const htl=document.getElementById('h-timelbl');if(htl)htl.textContent=tl;
+
+// NAVIGATION
+function nav(id){
+  const cur=document.querySelector('.scr.on');
+  const t=document.getElementById(id);
+  if(!t||t===cur)return;
+  if(cur){cur.classList.remove('on');cur.classList.add('back');setTimeout(()=>cur.classList.remove('back'),350);}
+  t.classList.add('on');
+}
+function gotoMenu(){
+  const h=new Date().getHours();
+  if(h>=5&&h<11)nav('s-breakfast');
+  else if(h>=11&&h<15)nav('s-lunch');
+  else if(h>=15&&h<18)nav('s-snacks');
+  else nav('s-din');
+}
+function gotoCart(){buildCart();nav('s-cart');}
+
+// SPLASH AUTO - skipped, start on OTP
+
+// OTP — any number, click → next page
+let otpT;
+function sendOTP(){
+  const ph=document.getElementById('pinp').value.trim();
+  if(ph.length<6){
+    const w=document.getElementById('pwrap');w.style.animation='shake .4s ease';
+    setTimeout(()=>w.style.animation='',400);return;
+  }
+  document.getElementById('ph-show').textContent='+91 '+ph.slice(0,5)+'XXXXX';
+  document.getElementById('ph-sec').style.display='none';
+  document.getElementById('otp-sec').style.display='block';
+  startOTPTimer();
+  // Auto fill OTP digits
+  setTimeout(()=>{
+    ['ob1','ob2','ob3','ob4'].forEach((id,i)=>setTimeout(()=>{
+      const el=document.getElementById(id);
+      el.value=(i+1).toString();
+      el.style.borderColor='var(--or)';el.style.background='#FFF0EA';
+    },i*120));
+  },600);
+  // Auto verify — ONE click pannuna next page ku pogum!
+  setTimeout(()=>verOTP(),1700);
+}
+function showPh(){
+  document.getElementById('ph-sec').style.display='block';
+  document.getElementById('otp-sec').style.display='none';
+  clearInterval(otpT);
+  ['ob1','ob2','ob3','ob4'].forEach(id=>{const el=document.getElementById(id);el.value='';el.style.borderColor='';el.style.background='';});
+}
+function otpIn(el,prev,next){
+  if(el.value){el.style.borderColor='var(--or)';el.style.background='#FFF0EA';if(next)document.getElementById(next).focus();}
+  else{el.style.borderColor='';el.style.background='';if(prev)document.getElementById(prev).focus();}
+  // Manual fill — auto verify on 4 digits
+  const otp=['ob1','ob2','ob3','ob4'].map(id=>document.getElementById(id).value).join('');
+  if(otp.length===4)setTimeout(()=>verOTP(),300);
+}
+function verOTP(){clearInterval(otpT);nav('s-welcome');}
+function startOTPTimer(){
+  let s=30;clearInterval(otpT);
+  const el=document.getElementById('otptmr');
+  otpT=setInterval(()=>{s--;if(el)el.textContent='0:'+String(s).padStart(2,'0');if(s<=0)clearInterval(otpT);},1000);
+}
+
+// CART
+function addI(id,price,name){
+  document.getElementById('ab-'+id).style.display='none';
+  document.getElementById('qc-'+id).style.display='flex';
+  document.getElementById('qn-'+id).textContent='1';
+  cart[id]={qty:1,p:price,n:name};
+  updateBars();
+}
+function cQ(id,delta,price,name){
+  if(!cart[id])return;
+  cart[id].qty+=delta;
+  if(cart[id].qty<=0){
+    delete cart[id];
+    document.getElementById('qc-'+id).style.display='none';
+    document.getElementById('ab-'+id).style.display='flex';
+    document.getElementById('qn-'+id).textContent='0';
+  }else{
+    document.getElementById('qn-'+id).textContent=cart[id].qty;
+  }
+  updateBars();
+}
+function calcDiscount(tot){
+  if(!coupon)return 0;
+  const c=COUPONS[coupon];if(!c)return 0;
+  return c.t==='pct'?Math.round(tot*c.d/100):c.d;
+}
+function updateBars(){
+  const menus=[{id:'b',pf:'b-'},{id:'l',pf:'l-'},{id:'sn',pf:'sn-'},{id:'d',pf:'d-'}];
+  let grand=0,gitems=0;
+  menus.forEach(m=>{
+    let t=0,i=0;
+    for(let k in cart){if(k.startsWith(m.pf)){t+=cart[k].qty*cart[k].p;i+=cart[k].qty;}}
+    grand+=t;gitems+=i;
+    const bar=document.getElementById('cbar-'+m.id);
+    const cnt=document.getElementById('cbc-'+m.id);
+    const totEl=document.getElementById('cbp-'+m.id);
+    const itmEl=document.getElementById('cbt-'+m.id);
+    if(cnt)cnt.textContent=i;
+    if(totEl)totEl.textContent='₹'+t;
+    if(itmEl)itmEl.textContent=i+' item'+(i!==1?'s':'')+' added';
+    if(bar)i>0?bar.classList.add('show'):bar.classList.remove('show');
+  });
+  const disc=calcDiscount(grand);
+  const total=grand+25-disc;
+  ['pay-btn-amt','pay-amt','pay-famt'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='₹'+total;});
+  const tt=document.getElementById('track-total');if(tt)tt.textContent='₹'+total;
+}
+
+function buildCart(){
+  const list=document.getElementById('cart-list');
+  let total=0,items=0,html='';
+  for(let k in cart){
+    total+=cart[k].qty*cart[k].p;items+=cart[k].qty;
+    html+=`<div style="background:var(--wh);border-radius:14px;padding:11px 13px;margin-bottom:9px;display:flex;align-items:center;gap:11px;border:1px solid var(--cr2)">
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--br2);margin-bottom:2px">${cart[k].n}</div><div style="font-size:12px;font-weight:700;color:var(--or)">₹${cart[k].p} × ${cart[k].qty} = ₹${cart[k].qty*cart[k].p}</div></div>
+      <div style="display:flex;align-items:center;background:var(--cr);border-radius:8px;overflow:hidden;border:1.5px solid var(--cr2)">
+        <button style="width:26px;height:26px;background:none;border:none;font-size:16px;color:var(--br2);cursor:pointer" onclick="cQ('${k}',-1,${cart[k].p},'${cart[k].n}');buildCart()">−</button>
+        <span style="width:24px;text-align:center;font-size:12px;font-weight:700;color:var(--br2)">${cart[k].qty}</span>
+        <button style="width:26px;height:26px;background:none;border:none;font-size:16px;color:var(--br2);cursor:pointer" onclick="cQ('${k}',1,${cart[k].p},'${cart[k].n}');buildCart()">+</button>
+      </div>
+    </div>`;
+  }
+  // CART EMPTY STATE — tagline + explore button
+  if(items===0){
+    list.innerHTML=`<div class="empty-cart">
+      <div style="font-size:56px;margin-bottom:14px">🛒</div>
+      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:var(--br2);margin-bottom:8px">Your cart is empty!</div>
+      <div style="font-size:13px;color:#B08060;line-height:1.7;margin-bottom:10px">"Good food is the foundation<br>of genuine happiness!" 🍽️</div>
+      <div style="font-size:12px;color:#B08060;margin-bottom:24px">Explore our fresh menu and<br>add something delicious!</div>
+      <button onclick="gotoMenu()" style="background:linear-gradient(135deg,var(--or),#FF6B35);color:white;border:none;border-radius:14px;padding:13px 28px;font-family:system-ui,sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(232,98,42,.3)">🍽️ Explore Menu</button>
+    </div>`;
+    document.getElementById('cart-sub').textContent='Nothing here yet';
+    document.getElementById('cart-pay-btn').style.display='none';
+    return;
+  }
+  document.getElementById('cart-pay-btn').style.display='block';
+  document.getElementById('cart-sub').textContent=items+' items added';
+  // Address
+  html+=`<div style="background:var(--wh);border-radius:13px;padding:12px 13px;margin-bottom:9px;display:flex;align-items:center;gap:9px;border:1px solid var(--cr2)"><div style="width:36px;height:36px;background:#FFF0EA;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📍</div><div style="flex:1"><div style="font-size:10px;font-weight:700;color:var(--or);letter-spacing:1px;text-transform:uppercase;margin-bottom:1px">Delivering to</div><div style="font-size:12px;color:var(--br2);font-weight:500">12, Anna Nagar, Chennai - 600040</div></div><button style="font-size:11px;color:var(--or);font-weight:600;background:none;border:none;cursor:pointer">Change</button></div>`;
+  // Coupon
+  const disc=calcDiscount(total);
+  html+=`<div style="background:var(--wh);border-radius:13px;padding:10px 12px;margin-bottom:9px;border:1.5px dashed var(--cr2);display:flex;align-items:center;gap:9px"><span style="font-size:18px">🎁</span><input id="cpn-inp" value="${coupon||''}" placeholder="Enter coupon (TASTY10, FIRST20...)" style="flex:1;border:none;background:transparent;font-family:system-ui,sans-serif;font-size:12px;color:var(--br2);outline:none;min-width:0"/><button onclick="applyC()" style="background:${coupon?'var(--gn)':'var(--or)'};border:none;border-radius:8px;padding:7px 12px;font-family:system-ui,sans-serif;font-size:11px;font-weight:600;color:white;cursor:pointer">${coupon?'✓ Applied':'Apply'}</button></div>`;
+  if(coupon&&disc>0)html+=`<div style="background:#E8F5E9;border-radius:10px;padding:8px 12px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:var(--gn);font-weight:600">✅ Coupon ${coupon} applied!</span><button onclick="removeC()" style="font-size:11px;color:#C62828;background:none;border:none;cursor:pointer;font-family:system-ui,sans-serif;font-weight:600">Remove</button></div>`;
+  // Bill
+  const final=total+25-disc;
+  html+=`<div style="background:var(--wh);border-radius:14px;padding:13px;border:1px solid var(--cr2);margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:var(--br2);margin-bottom:9px">📋 BILL SUMMARY</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:#B08060">Item Total</span><span style="font-size:12px;color:var(--br2);font-weight:500">₹${total}</span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:#B08060">Delivery Fee</span><span style="font-size:12px;color:var(--br2);font-weight:500">₹20</span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:#B08060">Platform Fee</span><span style="font-size:12px;color:var(--br2);font-weight:500">₹5</span></div>
+    ${disc>0?`<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:#B08060">🎁 Discount (${coupon})</span><span style="font-size:12px;color:var(--gn);font-weight:600">− ₹${disc}</span></div>`:''}
+    <div style="height:1px;background:var(--cr2);margin:9px 0"></div>
+    <div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:700;color:var(--br2)">Grand Total</span><span style="font-size:15px;font-weight:800;color:var(--or)">₹${final}</span></div>
+  </div>`;
+  list.innerHTML=html;
+  ['pay-btn-amt','pay-amt','pay-famt'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='₹'+final;});
+}
+
+function applyC(){
+  const code=(document.getElementById('cpn-inp')?.value||'').toUpperCase().trim();
+  if(COUPONS[code]){coupon=code;buildCart();updateBars();}
+  else{alert('❌ Invalid coupon!\n\nValid codes:\n• TASTY10 — ₹10 off\n• FIRST20 — ₹20 off\n• SAVE15 — 15% off\n• WELCOME50 — ₹50 off');}
+}
+function removeC(){coupon=null;buildCart();updateBars();}
+
+// PAYMENT
+function switchPT(tab){
+  curPT=tab;
+  document.getElementById('pt-upi').style.color=tab==='upi'?'var(--or)':'#B08060';
+  document.getElementById('pt-upi').style.borderBottomColor=tab==='upi'?'var(--or)':'transparent';
+  document.getElementById('pt-cod').style.color=tab==='cod'?'var(--or)':'#B08060';
+  document.getElementById('pt-cod').style.borderBottomColor=tab==='cod'?'var(--or)':'transparent';
+  document.getElementById('pay-upi-tab').style.display=tab==='upi'?'block':'none';
+  document.getElementById('pay-cod-tab').style.display=tab==='cod'?'block':'none';
+  document.getElementById('pay-mlbl').textContent=tab==='upi'?'📱 UPI':'💵 COD';
+}
+function selU(app){
+  curUPI=app;
+  document.querySelectorAll('.uapp').forEach(a=>a.classList.remove('on'));
+  document.getElementById('ua-'+app).classList.add('on');
+}
+function verifyU(){
+  const val=document.getElementById('upi-id').value;
+  if(val.length<3){alert('Enter valid UPI ID!');return;}
+  document.getElementById('upi-ok').style.display='flex';
+  document.getElementById('upi-ok-txt').textContent=val+'@upi ✓ Verified!';
+}
+function resetV(){document.getElementById('upi-ok').style.display='none';}
+function placeOrder(){
+  const nm={gpay:'GPay',ppe:'PhonePe',ptm:'Paytm',bhim:'BHIM'};
+  const uid=document.getElementById('upi-id')?.value;
+  let method=curPT==='upi'?(uid?'UPI: '+uid+'@upi':'Paid via '+nm[curUPI]):'Cash on Delivery';
+  document.getElementById('track-pay').textContent='✅ '+method;
+  const cn=Math.floor(Math.random()*1000)+1000;
+  document.getElementById('ty-cn').textContent='🌟 #'+cn;
+  document.getElementById('ty-on').textContent=cn.toLocaleString()+'th';
+  // Save to Firebase
+  if(window.saveOrderToFirebase) {
+    window.saveOrderToFirebase().then(id => {
+      if(id) console.log('🔥 Order #'+cn+' saved to Firebase:', id);
+    });
+  }
+  nav('s-ty');
+}
+
+// TRACKING
+function showMap(){
+  document.getElementById('tp-view').style.display='none';
+  document.getElementById('tm-view').style.display='flex';
+  clearInterval(etaT);let eta=18;
+  etaT=setInterval(()=>{if(eta>1){eta--;const el=document.getElementById('eta-n');if(el)el.textContent=eta;}else{clearInterval(etaT);const el=document.getElementById('eta-n');if(el)el.textContent='🏠';}},3000);
+}
+
+// FILTER CATEGORIES
+function fCat(el,scrollId,attr,cat){
+  const c=document.getElementById(scrollId);if(!c)return;
+  c.querySelectorAll('['+attr+']').forEach(card=>card.style.display=(cat==='all'||card.getAttribute(attr)===cat)?'flex':'none');
+  el.closest('.ctabs').querySelectorAll('.ctb').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  c.querySelectorAll('.slbl').forEach(s=>s.style.display=cat==='all'?'block':'none');
+  c.querySelectorAll('.gbanner,.hbanner').forEach(b=>b.style.display=cat==='all'?'flex':'none');
+}
+
+// HEART / LIKED FOODS
+function toggleH(id,name,price,img){
+  const btn=document.getElementById('hb-'+id);if(!btn)return;
+  if(liked[id]){
+    delete liked[id];btn.textContent='🤍';btn.classList.remove('liked');
+  }else{
+    liked[id]={n:name,p:price,img};btn.textContent='❤️';btn.classList.add('liked');
+  }
+  refreshLiked();
+}
+function refreshLiked(){
+  const count=Object.keys(liked).length;
+  const el=document.getElementById('liked-count');if(el)el.textContent=count+'❤️';
+  const list=document.getElementById('liked-list');if(!list)return;
+  if(count===0){
+    list.innerHTML='<div style="text-align:center;padding:24px 20px;color:#B08060;background:var(--wh);border-radius:13px;border:1px solid var(--cr2)"><div style="font-size:32px;margin-bottom:7px">🤍</div><div style="font-size:13px;font-weight:600;color:var(--br2);margin-bottom:3px">No liked foods yet!</div><div style="font-size:11px">Tap ❤️ on any food to save it here</div></div>';
+    return;
+  }
+  let html='';
+  for(let k in liked){
+    const f=liked[k];
+    html+=`<div class="lkcard">
+      <img class="lkimg" src="${f.img}" alt="" onerror="this.style.background='var(--cr2)'"/>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--br2);margin-bottom:2px">${f.n}</div><div style="font-size:13px;font-weight:700;color:var(--or)">₹${f.p}</div></div>
+      <button onclick="addI('${k}',${f.p},'${f.n}')" style="background:var(--or);border:none;border-radius:9px;padding:8px 13px;font-family:system-ui,sans-serif;font-size:12px;font-weight:600;color:white;cursor:pointer">+ Add</button>
+    </div>`;
+  }
+  list.innerHTML=html;
+}
+
+// SEARCH
+function doSearch(val){
+  const res=document.getElementById('sresults');if(!res)return;
+  if(!val||val.trim().length===0){
+    res.innerHTML='<div style="text-align:center;padding:40px 20px;color:#B08060"><div style="font-size:48px;margin-bottom:12px">🔍</div><div style="font-size:15px;font-weight:600;color:var(--br2);margin-bottom:6px">Search your favourite food</div><div style="font-size:12px">Try: Idly, Dosa, Briyani, Vada...</div></div>';
+    return;
+  }
+  const q=val.toLowerCase();
+  const found=FOODS.filter(f=>f.n.toLowerCase().includes(q)||f.c.toLowerCase().includes(q));
+  if(found.length===0){
+    res.innerHTML=`<div style="text-align:center;padding:40px 20px;color:#B08060"><div style="font-size:48px;margin-bottom:12px">😔</div><div style="font-size:15px;font-weight:600;color:var(--br2);margin-bottom:6px">No results for "${val}"</div><div style="font-size:12px">Try: Idly, Dosa, Briyani, Vada, Paneer...</div></div>`;
+    return;
+  }
+  let html=`<div style="font-size:11px;font-weight:700;color:var(--br);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">${found.length} result${found.length>1?'s':''} found</div>`;
+  found.forEach(f=>{
+    html+=`<div onclick="nav('${f.s}')" style="background:var(--wh);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;border:1px solid var(--cr2);cursor:pointer">
+      <img style="width:44px;height:44px;border-radius:9px;object-fit:cover;flex-shrink:0" src="${f.img}" alt="" onerror="this.style.background='var(--cr2)'"/>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--br2)">${f.n}</div><div style="font-size:10px;color:#B08060">${f.c}</div></div>
+      <div style="font-size:13px;font-weight:700;color:var(--or)">₹${f.p}</div>
+      <div style="background:var(--cr);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--br)">View →</div>
+    </div>`;
+  });
+  res.innerHTML=html;
+}
+</script>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA9A3bcb8lNZedTyqyMdEbbdGcmdbxzGyg",
+  authDomain: "tastymeals-d4a6a.firebaseapp.com",
+  projectId: "tastymeals-d4a6a",
+  storageBucket: "tastymeals-d4a6a.firebasestorage.app",
+  messagingSenderId: "714040200968",
+  appId: "1:714040200968:web:91bb5ab11a8b0d5c9b66bd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Save order to Firestore
+window.saveOrderToFirebase = async function() {
+  try {
+    const items = Object.entries(cart).map(([id, v]) => ({
+      id, name: v.n, price: v.p, qty: v.qty
+    }));
+    const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+    const total = subtotal + 25 - (coupon ? (COUPONS[coupon]?.t==='pct' ? Math.round(subtotal*COUPONS[coupon].d/100) : COUPONS[coupon]?.d) : 0);
+    const orderRef = await addDoc(collection(db, "orders"), {
+      items,
+      subtotal,
+      total,
+      coupon: coupon || null,
+      address: "12, Anna Nagar, Chennai - 600040",
+      status: "placed",
+      createdAt: serverTimestamp()
+    });
+    console.log("✅ Order saved to Firebase! ID:", orderRef.id);
+    return orderRef.id;
+  } catch(e) {
+    console.error("❌ Firebase error:", e);
+    return null;
+  }
+}
+
+console.log("🔥 Firebase connected! tastymeals-d4a6a");
+</script>
+<div id="recaptcha-container"></div>
+</body>
+</html>
